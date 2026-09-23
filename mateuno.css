@@ -1,0 +1,13 @@
+/* Estilos personalizados adicionales para MateUNA */
+body {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+}
+
+.option-btn {
+    transition: all 0.2s ease-in-out;
+}
+
+.option-btn:hover {
+    background-color: #f8fafc;
+    border-color: #3b82f6;
+}

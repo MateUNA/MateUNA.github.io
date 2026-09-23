@@ -1,1 +1,137 @@
-hola
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MateUNA - Matemática I</title>
+    <!-- Metas para PWA y Dispositivos Móviles -->
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <link rel="apple-touch-icon" href="./assets/una_logo.png">
+    <link rel="icon" type="image/png" href="./assets/una_logo.png">
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Identity Services (OAuth) -->
+    <script src="https://accounts.google.com/gsi/client" async defer></script>
+    <!-- Estilos personalizados -->
+    <link rel="stylesheet" href="mateuno.css">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- HEADER / LOGIN -->
+    <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center z-10 sticky top-0">
+        <div class="flex items-center gap-3">
+            <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="hidden md:hidden text-slate-700 focus:outline-none p-1">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path>
+                </svg>
+            </button>
+            <h1 class="text-xl font-bold text-blue-900 cursor-pointer" onclick="toggleMobileMenu()">Mate UNO</h1>
+        </div>
+        <div id="auth-section">
+            <div id="g_id_onload"
+                 data-client_id="205229444634-85v2gua4tv360jnn02bj5d68uhrb2e85.apps.googleusercontent.com"
+                 data-callback="handleCredentialResponse"
+                 data-auto_prompt="false">
+            </div>
+            <div class="g_id_signin" data-type="standard"></div>
+        </div>
+        <div id="user-info" class="hidden flex items-center gap-4">
+            <div class="text-right">
+                <span id="user-name" class="block font-medium text-sm"></span>
+                <span id="session-timer" class="text-xs text-slate-400 font-mono">⏱️ 00:00</span>
+            </div>
+            <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-3 py-1.5 rounded-lg">Salir</button>
+        </div>
+    </header>
+
+    <!-- PANTALLA DE ACCESO RESTRINGIDO (Antes de iniciar sesión) -->
+    <main id="login-wrapper" class="max-w-md mx-auto p-6 flex-grow flex items-center justify-center w-full">
+        <div id="login-prompt" class="bg-white p-8 rounded-2xl shadow-sm text-center w-full border border-slate-100">
+            <h2 class="text-2xl font-bold mb-3 text-slate-700">Bienvenido al Aula Virtual</h2>
+            <p class="text-slate-500 mb-6 text-sm">Inicia sesión con tu cuenta institucional de Google para acceder al contenido y evaluaciones de la UNA.</p>
+            <div class="flex justify-center">
+                <div class="g_id_signin" data-type="standard"></div>
+            </div>
+        </div>
+    </main>
+
+    <!-- CONTENEDOR PRINCIPAL DE LA APLICACIÓN (Oculto hasta iniciar sesión) -->
+    <div id="app-container" class="hidden max-w-7xl mx-auto p-4 md:p-6 flex-grow w-full grid grid-cols-1 md:grid-cols-4 gap-6 items-start">
+        
+        <!-- MENÚ LATERAL (SIDEBAR) -->
+        <aside id="sidebar-menu" class="hidden md:block bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-1 md:col-span-1">
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>
+            <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
+            <button onclick="showSection('quiz')" id="nav-quiz" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">📊 Evaluaciones / Quiz</button>
+            <button onclick="showSection('fundamentacion')" id="nav-fundamentacion" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📖 Fundamentación</button>
+            <button onclick="showSection('plan')" id="nav-plan" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📑 Plan de Curso</button>
+            <button onclick="showSection('ruta')" id="nav-ruta" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🗺️ Ruta de Estudio</button>
+            <button onclick="showSection('examenes')" id="nav-examenes" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📅 Fechas de Exámenes</button>
+            <button onclick="showSection('clases')" id="nav-clases" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🏫 Fechas de Clases</button>
+            <button onclick="showSection('viejos')" id="nav-viejos" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📂 Exámenes Viejos</button>
+            <button onclick="showSection('links')" id="nav-links" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🔗 Links Importantes</button>
+            <button onclick="showSection('contacto')" id="nav-contacto" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">👨‍🏫 Contacto Profesor</button>
+            <button onclick="showSection('estadisticas')" id="nav-estadisticas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Estadísticas</button>
+        </aside>
+
+        <!-- CUERPO CENTRAL DINÁMICO -->
+        <main class="md:col-span-3 space-y-6">
+            
+            <!-- VISTA DE QUIZ (Se muestra por defecto al entrar) -->
+            <div id="view-quiz" class="space-y-6">
+                <!-- Selector de Objetivos -->
+                <div class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
+                    <button onclick="switchObjective('1.1')" id="btn-obj-1.1" class="px-4 py-2 bg-blue-900 text-white rounded-xl font-medium text-sm transition">Obj. 1.1</button>
+                    <button onclick="switchObjective('1.2')" id="btn-obj-1.2" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 1.2</button>
+                    <button onclick="switchObjective('1.3')" id="btn-obj-1.3" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 1.3</button>
+                    <button onclick="switchObjective('2.1')" id="btn-obj-2.1" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 2.1</button>
+                    <button onclick="switchObjective('2.2')" id="btn-obj-2.2" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 2.2</button>
+                    <button onclick="switchObjective('2.3')" id="btn-obj-2.3" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 2.3</button>
+                    <button onclick="switchObjective('3.1')" id="btn-obj-3.1" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 3.1</button>
+                    <button onclick="switchObjective('3.2')" id="btn-obj-3.2" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 3.2</button>
+                    <button onclick="switchObjective('3.3')" id="btn-obj-3.3" class="px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition">Obj. 3.3</button>
+                </div>
+
+                <!-- Tarjeta de Pregunta -->
+                <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+                    <div class="flex justify-between items-center mb-4">
+                        <span id="obj-title" class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Cargando...</span>
+                        <span class="text-xs text-slate-400 font-medium">Evaluación Formativa</span>
+                    </div>
+
+                    <p id="question-text" class="text-lg font-medium text-slate-800 mb-6">Conectando con la base de datos...</p>
+
+                    <!-- Opciones de Respuesta -->
+                    <div id="options-container" class="space-y-3 mb-6"></div>
+
+                    <button id="submit-btn" onclick="submitQuiz()" disabled class="w-full bg-slate-200 text-slate-400 font-medium py-3 rounded-xl transition cursor-not-allowed">Enviar Respuesta</button>
+                </div>
+
+                <!-- Contenedor de Resultado -->
+                <div id="result-container" class="hidden bg-emerald-50 border border-emerald-100 p-6 rounded-2xl text-center">
+                    <h3 class="text-xl font-bold text-emerald-800 mb-2">¡Respuesta Registrada con Éxito!</h3>
+                    <p class="text-emerald-600 text-sm mb-4">Tu progreso y tiempo de sesión han sido guardados correctamente.</p>
+                    <button onclick="loadQuestionsForCurrentObjective()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-emerald-700 transition shadow-sm">Siguiente Pregunta</button>
+                </div>
+            </div>
+
+            <!-- VISTA DINÁMICA GENERAL (Para Fundamentación, Plan, Links, etc.) -->
+            <div id="view-dynamic" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+                <!-- El contenido de texto inyectado por JS aparecerá aquí -->
+            </div>
+
+        </main>
+    </div>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
+        Universidad Nacional Abierta (UNA) • Centro Local Yaracuy • Pasantías 2026
+    </footer>
+
+    <!-- SCRIPT DE LÓGICA -->
+    <script src="mateuno.js"></script>
+</body>
+</html>
