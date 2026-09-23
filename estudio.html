@@ -42,24 +42,21 @@
                 </div>
             </div>
             
-            <!-- LINK A LA APP PRINCIPAL -->
+            <!-- LINKS DE NAVEGACIÓN -->
             <a href="index.html" class="mt-3 flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-indigo-950 font-semibold py-2 px-3 rounded-xl text-xs transition shadow-md">
                 <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                Ir a pagina Principal
+                Ir a página Principal
             </a>
-            <a href="./practica.html" class="mt-3 flex items-center justify-center gap-2 w-full bg-amber-500 hover:bg-amber-600 text-indigo-950 font-semibold py-2 px-3 rounded-xl text-xs transition shadow-md">
-                <i data-lucide="layout-dashboard" class="w-4 h-4"></i>
-                Practicar Examenes Viejos
+            <a href="./practica.html" class="mt-2 flex items-center justify-center gap-2 w-full bg-indigo-800 hover:bg-indigo-700 text-white font-semibold py-2 px-3 rounded-xl text-xs transition border border-indigo-700">
+                <i data-lucide="pen-tool" class="w-4 h-4"></i>
+                Practicar Exámenes Viejos
             </a>
         </div>
 
         <!-- LISTA DE OBJETIVOS -->
         <div class="flex-1 overflow-y-auto custom-scrollbar p-3 space-y-1">
             <div class="px-3 py-2 text-[10px] font-bold text-indigo-400 uppercase tracking-wider">Módulos de Estudio</div>
-            
-            <div id="objectives-list" class="space-y-1">
-                <!-- Generado dinámicamente con JavaScript -->
-            </div>
+            <div id="objectives-list" class="space-y-1"></div>
         </div>
 
         <!-- PIE DEL SIDEBAR -->
@@ -86,7 +83,6 @@
 
         <!-- CONTENEDOR DE SUBTEMAS -->
         <section id="subtopics-container" class="space-y-6">
-            <!-- Tarjetas de Subtemas cargadas con JS -->
             <div class="text-center py-12 text-slate-400">
                 <i data-lucide="loader-2" class="w-8 h-8 animate-spin mx-auto mb-2 text-indigo-600"></i>
                 <p class="text-sm">Obteniendo temas y materiales desde la hoja de cálculo...</p>
@@ -95,12 +91,45 @@
 
     </main>
 
+    <!-- MODAL PARA VISUALIZAR RECURSOS EN VIVO -->
+    <div id="resource-modal" class="fixed inset-0 bg-slate-900/80 backdrop-blur-xs z-50 hidden flex-col justify-between p-3 md:p-6 transition-opacity">
+        <div class="bg-white rounded-2xl shadow-2xl flex flex-col h-full w-full max-w-6xl mx-auto overflow-hidden">
+            <!-- HEADER DEL MODAL -->
+            <div class="px-5 py-4 border-b border-slate-200 flex justify-between items-center bg-slate-50">
+                <div class="flex items-center gap-3">
+                    <div id="modal-icon-container" class="p-2 rounded-lg bg-indigo-100 text-indigo-700">
+                        <i id="modal-icon" data-lucide="file-text" class="w-5 h-5"></i>
+                    </div>
+                    <div>
+                        <h3 id="modal-title" class="font-bold text-slate-800 text-sm md:text-base">Visualizador de Recurso</h3>
+                        <p id="modal-subtitle" class="text-xs text-slate-500">Vista previa integrada</p>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2">
+                    <a id="modal-external-link" href="#" target="_blank" title="Abrir en pestaña nueva" class="p-2 text-slate-500 hover:text-indigo-600 hover:bg-slate-200/60 rounded-lg transition">
+                        <i data-lucide="external-link" class="w-5 h-5"></i>
+                    </a>
+                    <button onclick="closeModal()" class="p-2 text-slate-500 hover:text-rose-600 hover:bg-rose-50 rounded-lg transition">
+                        <i data-lucide="x" class="w-6 h-6"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- CUERPO DEL MODAL (IFRAME) -->
+            <div class="flex-1 bg-slate-100 relative">
+                <div id="iframe-loader" class="absolute inset-0 flex flex-col items-center justify-center bg-white text-slate-400 z-10">
+                    <i data-lucide="loader-2" class="w-10 h-10 animate-spin text-indigo-600 mb-2"></i>
+                    <p class="text-sm font-medium">Cargando documento...</p>
+                </div>
+                <iframe id="resource-iframe" class="w-full h-full border-0 relative z-20" onload="hideIframeLoader()"></iframe>
+            </div>
+        </div>
+    </div>
+
     <!-- LOGICA JS -->
     <script>
-        // CONFIGURACIÓN: Ingresa la URL de tu Web App desplegada en Google Apps Script
         const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwnznaPLLJRji-QDgV4L18z1my_hYOwD2g4LdG9IDOruHFvozj2yVlga3DAiuugslSV/exec";
 
-        // Estructura fija de los 9 Objetivos de Matemática I (UNA)
         const OBJECTIVES = [
             { id: "1.1", name: "Objetivo 1.1: N,Z,Q", desc: "Conjuntos numéricos, axiómica de números reales y propiedades." },
             { id: "1.2", name: "Objetivo 1.2: Numeros Reales", desc: "Ecuaciones, inecuaciones y valor absoluto." },
@@ -116,20 +145,16 @@
         let currentObjId = "1.1";
         let studyData = [];
 
-        // Inicializar Interfaz
         document.addEventListener("DOMContentLoaded", () => {
             renderSidebar();
             loadStudyMaterials();
             lucide.createIcons();
         });
 
-        // Alternar menú móvil
         function toggleSidebar() {
-            const sidebar = document.getElementById('sidebar');
-            sidebar.classList.toggle('hidden');
+            document.getElementById('sidebar').classList.toggle('hidden');
         }
 
-        // Renderizar Menú Lateral
         function renderSidebar() {
             const listContainer = document.getElementById('objectives-list');
             listContainer.innerHTML = OBJECTIVES.map(obj => `
@@ -150,7 +175,6 @@
             lucide.createIcons();
         }
 
-        // Cambiar de Objetivo
         function selectObjective(objId) {
             currentObjId = objId;
             renderSidebar();
@@ -158,16 +182,13 @@
             if (window.innerWidth < 768) toggleSidebar();
         }
 
-        // Cargar Datos desde Apps Script / LocalStorage (Offline friendly)
         function loadStudyMaterials() {
-            // Intentar cargar caché local primero
             const cached = localStorage.getItem('mateuna_study_data');
             if (cached) {
                 studyData = JSON.parse(cached);
                 renderObjectiveContent();
             }
 
-            // Consultar actualización a la red
             fetch(`${GOOGLE_SHEET_API_URL}?action=getStudyMaterials`)
                 .then(res => res.json())
                 .then(data => {
@@ -178,11 +199,10 @@
                     }
                 })
                 .catch(err => {
-                    console.log("Modo offline o error al conectar con Google Sheets:", err);
+                    console.log("Error al conectar con Google Sheets:", err);
                 });
         }
 
-        // Renderizar Contenido del Objetivo Selección
         function renderObjectiveContent() {
             const objInfo = OBJECTIVES.find(o => o.id === currentObjId);
             document.getElementById('obj-badge').innerText = `Unidad Módulo: ${objInfo.id}`;
@@ -197,7 +217,6 @@
                     <div class="bg-white p-8 rounded-2xl text-center border border-dashed border-slate-300 text-slate-500">
                         <i data-lucide="folder-open" class="w-10 h-10 mx-auto mb-2 text-slate-400"></i>
                         <p class="font-medium">No hay subtemas cargados aún para este objetivo.</p>
-                        <p class="text-xs mt-1">Añade filas en la pestaña de Google Sheets para este objetivo.</p>
                     </div>
                 `;
                 lucide.createIcons();
@@ -211,15 +230,12 @@
                         ${item.subtema_desc ? `<p class="text-xs text-slate-500 mt-1">${item.subtema_desc}</p>` : ''}
                     </div>
 
-                    <!-- MATRIZ DE RECURSOS DEL SUBTEMA -->
                     <div class="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3">
-                        
-                        ${renderResourceButton('PDF Guía', item.pdf_url, 'file-text', 'emerald')}
-                        ${renderResourceButton('Diapositivas', item.slides_url, 'presentation', 'amber')}
-                        ${renderResourceButton('Video Clase', item.video_url, 'youtube', 'rose')}
-                        ${renderResourceButton('Exámenes Viejos', item.ejercicios_url, 'file-check', 'indigo')}
-                        ${renderResourceButton('Mini-App Práctica', item.app_url, 'sparkles', 'purple')}
-
+                        ${renderResourceButton('PDF Guía', item.pdf_url, 'file-text', 'emerald', item.subtema_titulo)}
+                        ${renderResourceButton('Diapositivas', item.slides_url, 'presentation', 'amber', item.subtema_titulo)}
+                        ${renderResourceButton('Video Clase', item.video_url, 'youtube', 'rose', item.subtema_titulo)}
+                        ${renderResourceButton('Exámenes Viejos', item.ejercicios_url, 'file-check', 'indigo', item.subtema_titulo)}
+                        ${renderResourceButton('Mini-App Práctica', item.app_url, 'sparkles', 'purple', item.subtema_titulo)}
                     </div>
                 </article>
             `).join('');
@@ -227,17 +243,8 @@
             lucide.createIcons();
         }
 
-        // Componente de Botón de Recurso
-        function renderResourceButton(label, url, iconName, color) {
+        function renderResourceButton(label, url, iconName, color, subtopicTitle) {
             const hasUrl = url && url.trim() !== '';
-            
-            const colorClasses = {
-                emerald: hasUrl ? 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200' : '',
-                amber: hasUrl ? 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200' : '',
-                rose: hasUrl ? 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200' : '',
-                indigo: hasUrl ? 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200' : '',
-                purple: hasUrl ? 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200' : ''
-            };
 
             if (!hasUrl) {
                 return `
@@ -249,15 +256,84 @@
                 `;
             }
 
+            const colorClasses = {
+                emerald: 'bg-emerald-50 text-emerald-700 hover:bg-emerald-100 border-emerald-200',
+                amber: 'bg-amber-50 text-amber-700 hover:bg-amber-100 border-amber-200',
+                rose: 'bg-rose-50 text-rose-700 hover:bg-rose-100 border-rose-200',
+                indigo: 'bg-indigo-50 text-indigo-700 hover:bg-indigo-100 border-indigo-200',
+                purple: 'bg-purple-50 text-purple-700 hover:bg-purple-100 border-purple-200'
+            };
+
+            // Escapar comillas para pasar como parámetro en el onclick
+            const safeTitle = subtopicTitle.replace(/'/g, "\\'");
+            const safeUrl = url.replace(/'/g, "\\'");
+
             return `
-                <a href="${url}" target="_blank" rel="noopener noreferrer" 
-                   class="flex flex-col items-center justify-center p-3 rounded-xl border ${colorClasses[color]} transition text-center shadow-xs group">
+                <button onclick="openModal('${safeUrl}', '${label}', '${safeTitle}', '${iconName}')" 
+                        class="flex flex-col items-center justify-center p-3 rounded-xl border ${colorClasses[color]} transition text-center shadow-xs group w-full cursor-pointer">
                     <i data-lucide="${iconName}" class="w-5 h-5 mb-1 group-hover:scale-110 transition-transform"></i>
                     <span class="text-[11px] font-semibold">${label}</span>
-                    <span class="text-[9px] opacity-75">Abrir recurso</span>
-                </a>
+                    <span class="text-[9px] opacity-75">Abrir en el aula</span>
+                </button>
             `;
         }
+
+        // CONTROL DEL MODAL E IFRAME
+        function openModal(rawUrl, label, topicTitle, iconName) {
+            const modal = document.getElementById('resource-modal');
+            const iframe = document.getElementById('resource-iframe');
+            const loader = document.getElementById('iframe-loader');
+            
+            document.getElementById('modal-title').innerText = `${label} - ${topicTitle}`;
+            document.getElementById('modal-external-link').href = rawUrl;
+            
+            // Mostrar loader
+            loader.style.display = 'flex';
+            
+            // Transformar la URL para visualización embebida
+            let embedUrl = rawUrl;
+
+            // 1. Convertir enlaces de Google Drive PDF a modo Preview
+            if (rawUrl.includes('drive.google.com')) {
+                embedUrl = rawUrl.replace(/\/view.*$/, '/preview').replace(/\/edit.*$/, '/preview');
+            } 
+            // 2. Convertir enlaces de Google Slides
+            else if (rawUrl.includes('docs.google.com/presentation')) {
+                embedUrl = rawUrl.replace(/\/edit.*$/, '/embed').replace(/\/pub.*$/, '/embed');
+            }
+            // 3. Convertir enlaces de YouTube a embed
+            else if (rawUrl.includes('youtube.com/watch?v=')) {
+                const videoId = rawUrl.split('v=')[1].split('&')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            } else if (rawUrl.includes('youtu.be/')) {
+                const videoId = rawUrl.split('youtu.be/')[1].split('?')[0];
+                embedUrl = `https://www.youtube.com/embed/${videoId}`;
+            }
+
+            iframe.src = embedUrl;
+            modal.classList.remove('hidden');
+            modal.classList.add('flex');
+            document.body.style.overflow = 'hidden'; // Bloquear scroll de la página principal
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('resource-modal');
+            const iframe = document.getElementById('resource-iframe');
+            
+            iframe.src = ''; // Limpiar iframe para detener videos en reproducción
+            modal.classList.add('hidden');
+            modal.classList.remove('flex');
+            document.body.style.overflow = 'auto'; // Restaurar scroll
+        }
+
+        function hideIframeLoader() {
+            document.getElementById('iframe-loader').style.display = 'none';
+        }
+
+        // Cierre con la tecla ESC
+        document.addEventListener('keydown', (e) => {
+            if (e.key === 'Escape') closeModal();
+        });
     </script>
 </body>
 </html>

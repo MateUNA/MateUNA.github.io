@@ -17,6 +17,20 @@
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Estilos personalizados -->
     <link rel="stylesheet" href="mateuno.css">
+
+    <script type="text/javascript">
+        window.$crisp=[];
+
+        window.$crisp.push(["set", "session:data", [["language", "es"]]]);
+        window.$crisp.push(["config", "locale:fallback", ["es"]]);
+        
+        window.CRISP_WEBSITE_ID="055e1e8e-333b-4b14-822d-9915ebc586e7";
+        (function(){d=document;s=d.createElement("script");
+                    s.src="https://client.crisp.chat/l.js";
+                    s.async=1;d.getElementsByTagName("head")[0].appendChild(s);
+                   })()
+            ;
+    </script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
 
@@ -47,13 +61,17 @@
         </div>
     </header>
 
-    <!-- PANTALLA DE ACCESO RESTRINGIDO (Antes de iniciar sesión) -->
+    <!-- PANTALLA DE ACCESO RESTRINGIDO -->
     <main id="login-wrapper" class="max-w-md mx-auto p-6 flex-grow flex items-center justify-center w-full">
         <div id="login-prompt" class="bg-white p-8 rounded-2xl shadow-sm text-center w-full border border-slate-100">
             <h2 class="text-2xl font-bold mb-3 text-slate-700">Bienvenido al Aula Virtual</h2>
             <p class="text-slate-500 mb-6 text-sm">Inicia sesión con tu cuenta institucional de Google para acceder al contenido y evaluaciones de la UNA.</p>
-            <div class="flex justify-center">
+            <div class="flex flex-col items-center gap-4">
                 <div class="g_id_signin" data-type="standard"></div>
+                <!-- Botón de respaldo para ingresar sin conexión -->
+                <button onclick="loginOfflineMode()" class="w-full text-xs text-slate-500 hover:text-slate-700 bg-slate-100 hover:bg-slate-200 py-2 px-4 rounded-xl transition font-medium">
+                    ⚡ Entrar en Modo Offline / Visitante
+                </button>
             </div>
         </div>
     </main>
@@ -63,9 +81,15 @@
         
         <!-- MENÚ LATERAL (SIDEBAR) -->
         <aside id="sidebar-menu" class="hidden md:block bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-1 md:col-span-1">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>
-            <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>            
+            <a href="./estudio.html">
+                <button id="nav-estudio" style="background-color:rgb(245 158 11);color:rgb(30 27 75)" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                    📚 Ir a Central de Estudio
+                </button>
+            </a>
+                      
             <button onclick="showSection('quiz')" id="nav-quiz" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">📊 Evaluaciones / Quiz</button>
+            <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
             <button onclick="showSection('fundamentacion')" id="nav-fundamentacion" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📖 Fundamentación</button>
             <button onclick="showSection('plan')" id="nav-plan" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📑 Plan de Curso</button>
             <button onclick="showSection('ruta')" id="nav-ruta" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🗺️ Ruta de Estudio</button>
@@ -73,8 +97,13 @@
             <button onclick="showSection('clases')" id="nav-clases" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🏫 Fechas de Clases</button>
             <button onclick="showSection('viejos')" id="nav-viejos" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📂 Exámenes Viejos</button>
             <button onclick="showSection('links')" id="nav-links" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🔗 Links Importantes</button>
-            <button onclick="showSection('contacto')" id="nav-contacto" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">👨‍🏫 Contacto Profesor</button>
-            <button onclick="showSection('estadisticas')" id="nav-estadisticas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Estadísticas</button>
+            <button onclick="showSection('contacto')" id="nav-contacto" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">👨‍🏫 Contactos</button>
+            <a href="./practica.html">
+                <button id="nav-practica" style="background-color:rgb(30 58 138);color:white" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                    📝 Ir a la pagina de Practicas
+                </button>
+            </a> 
+            <!--<button onclick="showSection('estadisticas')" id="nav-estadisticas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Estadísticas</button>-->
         </aside>
 
         <!-- CUERPO CENTRAL DINÁMICO -->
@@ -128,7 +157,7 @@
 
     <!-- FOOTER -->
     <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
-        Universidad Nacional Abierta (UNA) • Centro Local Yaracuy • Pasantías 2026
+        Universidad Nacional Abierta (UNA) • Centro Local Yaracuy • Practica Docemte 2026 • Ivan Lopez 
     </footer>
 
     <!-- SCRIPT DE LÓGICA -->

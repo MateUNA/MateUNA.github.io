@@ -1,0 +1,214 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Práctica Guida por Pasos - Matemática I</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <style>
+    :root {
+      --primary: #2563eb;
+      --success: #16a34a;
+      --error: #dc2626;
+      --bg: #f8fafc;
+      --card: #ffffff;
+    }
+    body { font-family: system-ui, -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 20px; color: #1e293b; }
+    .container { max-width: 800px; margin: 0 auto; }
+    nav { display: flex; gap: 10px; margin-bottom: 20px; background: var(--card); padding: 10px 15px; border-radius: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    nav a { text-decoration: none; color: var(--primary); font-weight: 600; font-size: 0.9em; }
+    .card { background: var(--card); padding: 20px; border-radius: 10px; box-shadow: 0 2px 4px rgba(0,0,0,0.05); margin-bottom: 20px; }
+    .controls {margin-bottom:20px }
+    select, button, input { padding: 10px; border: 1px solid #cbd5e1; border-radius: 6px; font-size: 1em; }
+    button { background: var(--primary); color: white; border: none; cursor: pointer; font-weight: 600; }
+    button:hover { opacity: 0.9; }
+    .exercise-img { max-width: 100%; border-radius: 6px; margin: 10px 0; border: 1px solid #e2e8f0; }
+    .step-box { border-left: 4px solid var(--primary); padding: 15px; background: #f1f5f9; margin-top: 15px; border-radius: 0 8px 8px 0; }
+    .hint { background: #fef3c7; border: 1px solid #fde047; padding: 10px; border-radius: 6px; margin: 10px 0; display: none; }
+    .feedback { font-weight: bold; margin-top: 5px; }
+    .correct { color: var(--success); }
+    .incorrect { color: var(--error); }
+    .btn-secondary { background: #64748b; font-size: 0.85em; padding: 6px 12px; margin-top: 5px; }
+  </style>
+</head>
+<body>
+
+<div class="container">
+  <!-- Navegación entre páginas -->
+  <nav>
+    <a href="index.html">← Menú Principal</a> | 
+    <a href="estudio.html">Material de Estudio</a> | 
+    <a href="practica.html" style="color: #0f172a;">Práctica Interactiva</a>
+  </nav>
+
+  <div class="card controls">
+    <div>
+      <label>Objetivo:</label>
+      <select id="select-obj" onchange="filtrarEjercicios()"><option value="">Cargando...</option></select>
+    </div>
+    </br>
+    <div>
+      <label>Semestre:</label>
+      <select id="select-semestre" disabled><option value="all">Todos / Aleatorio</option></select>
+    </div>
+    </br>
+    <div style="align-self: end;">
+      <button onclick="cargarEjercicio()">Cargar Ejercicio</button>
+    </div>
+  </div>
+
+  <div id="exercise-card" class="card" style="display: none;">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <h3 id="ex-title" style="margin: 0;"></h3>
+      <span id="ex-badge" style="background: #e2e8f0; padding: 4px 8px; border-radius: 4px; font-size: 0.85em;"></span>
+    </div>
+    
+    <div id="ex-content" style="margin-top: 15px;"></div>
+
+    <!-- Pasos dinámicos -->
+    <div id="steps-container"></div>
+  </div>
+</div>
+
+<script>
+  let ejerciciosData = [];
+  let ejercicioActual = null;
+
+  // Cargar datos del CSV al iniciar
+  window.addEventListener('DOMContentLoaded', () => {
+    Papa.parse('ejercicios.csv', {
+      download: true,
+      header: true,
+      skipEmptyLines: true,
+      complete: function(results) {
+        ejerciciosData = results.data;
+        poblarObjetivos();
+      }
+    });
+  });
+
+  function poblarObjetivos() {
+    const objs = [...new Set(ejerciciosData.map(item => item.obj))].sort();
+    const select = document.getElementById('select-obj');
+    select.innerHTML = '<option value="">-- Selecciona Objetivo --</option>';
+    objs.forEach(o => select.innerHTML += `<option value="${o}">Objetivo ${o}</option>`);
+  }
+
+  function filtrarEjercicios() {
+    const objSel = document.getElementById('select-obj').value;
+    const selectSem = document.getElementById('select-semestre');
+    
+    if (!objSel) {
+      selectSem.disabled = true;
+      return;
+    }
+
+    const semestres = [...new Set(ejerciciosData.filter(d => d.obj === objSel).map(d => d.semestre))];
+    selectSem.innerHTML = '<option value="all">Todos / Aleatorio</option>';
+    semestres.forEach(s => selectSem.innerHTML += `<option value="${s}">${s}</option>`);
+    selectSem.disabled = false;
+  }
+
+  function cargarEjercicio() {
+    const obj = document.getElementById('select-obj').value;
+    const sem = document.getElementById('select-semestre').value;
+
+    if (!obj) return alert('Por favor selecciona un objetivo.');
+
+    let filtrados = ejerciciosData.filter(d => d.obj === obj);
+    if (sem !== 'all') filtrados = filtrados.filter(d => d.semestre === sem);
+
+    if (filtrados.length === 0) return alert('No hay ejercicios disponibles con ese criterio.');
+
+    ejercicioActual = filtrados[Math.floor(Math.random() * filtrados.length)];
+    renderizarEjercicio();
+  }
+
+  function renderizarEjercicio() {
+    document.getElementById('exercise-card').style.display = 'block';
+    document.getElementById('ex-title').innerText = `Objetivo ${ejercicioActual.obj}`;
+    document.getElementById('ex-badge').innerText = `Lapso: ${ejercicioActual.semestre}`;
+
+    const contentDiv = document.getElementById('ex-content');
+    if (ejercicioActual.problema_texto && ejercicioActual.problema_texto.trim() !== '') {
+      contentDiv.innerHTML = `<p>${ejercicioActual.problema_texto}</p>`;
+    } else if (ejercicioActual.problema_captura) {
+      contentDiv.innerHTML = `<img src="${ejercicioActual.problema_captura}" class="exercise-img" alt="Enunciado del problema">`;
+    }
+
+    const stepsContainer = document.getElementById('steps-container');
+    stepsContainer.innerHTML = '';
+
+    // Renderizar solo el Paso 1 inicialmente
+    renderizarPaso(1);
+
+    if (window.MathJax) MathJax.typesetPromise();
+  }
+
+  function renderizarPaso(numPaso) {
+    const solKey = `solucion_paso_${numPaso}`;
+    const ansKey = `respuesta_paso_${numPaso}`;
+
+    if (!ejercicioActual[ansKey] || ejercicioActual[ansKey].trim() === '') return;
+
+    const stepsContainer = document.getElementById('steps-container');
+    const stepDiv = document.createElement('div');
+    stepDiv.className = 'step-box';
+    stepDiv.id = `box-paso-${numPaso}`;
+    stepDiv.innerHTML = `
+      <h4>Paso ${numPaso}</h4>
+      <div style="margin-bottom: 10px;">
+        <input type="text" id="input-paso-${numPaso}" placeholder="Escribe tu respuesta aquí...">
+        <button onclick="verificarPaso(${numPaso})">Verificar</button>
+      </div>
+      <button class="btn-secondary" onclick="togglePista(${numPaso})">Ver cómo resolver (Pista)</button>
+      <button class="btn-secondary" onclick="mostrarRespuesta(${numPaso})">Mostrar Respuesta</button>
+      
+      <div id="hint-paso-${numPaso}" class="hint">${ejercicioActual[solKey] || 'No hay pista disponible.'}</div>
+      <div id="feedback-paso-${numPaso}" class="feedback"></div>
+    `;
+    stepsContainer.appendChild(stepDiv);
+    if (window.MathJax) MathJax.typesetPromise();
+  }
+
+  function verificarPaso(numPaso) {
+    const userAns = document.getElementById(`input-paso-${numPaso}`).value.toLowerCase().replace(/\s+/g, '');
+    const validAnswers = ejercicioActual[`respuesta_paso_${numPaso}`].split(',').map(a => a.toLowerCase().replace(/\s+/g, ''));
+    const feedback = document.getElementById(`feedback-paso-${numPaso}`);
+
+    if (validAnswers.includes(userAns)) {
+      feedback.className = 'feedback correct';
+      feedback.innerText = '✓ ¡Correcto!';
+      document.getElementById(`input-paso-${numPaso}`).disabled = true;
+      
+      // Habilitar el siguiente paso si existe
+      if (document.getElementById(`box-paso-${numPaso + 1}`) === null) {
+        renderizarPaso(numPaso + 1);
+      }
+    } else {
+      feedback.className = 'feedback incorrect';
+      feedback.innerText = '✕ Incorrecto, intenta de nuevo o revisa la pista.';
+    }
+  }
+
+  function togglePista(numPaso) {
+    const hint = document.getElementById(`hint-paso-${numPaso}`);
+    hint.style.display = hint.style.display === 'block' ? 'none' : 'block';
+  }
+
+  function mostrarRespuesta(numPaso) {
+    const respuestas = ejercicioActual[`respuesta_paso_${numPaso}`].split(',')[0];
+    const feedback = document.getElementById(`feedback-paso-${numPaso}`);
+    feedback.className = 'feedback';
+    feedback.innerHTML = `<strong>Respuesta esperada:</strong> ${respuestas}`;
+    
+    // Permitir avanzar al siguiente paso tras revelar la respuesta
+    if (document.getElementById(`box-paso-${numPaso + 1}`) === null) {
+      renderizarPaso(numPaso + 1);
+    }
+  }
+</script>
+
+</body>
+</html>

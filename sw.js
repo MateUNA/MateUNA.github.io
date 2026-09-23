@@ -5,7 +5,9 @@ const ASSETS_TO_CACHE = [
   './mateuno.js',
   './mateuno.css',
   './preguntas.csv',
+  './ejercicios.csv',
   './estudio.html',
+  './pracrica.html',
   './manifest.json',
   './assets/una_logo.png',
   'https://cdn.tailwindcss.com'
