@@ -3,6 +3,7 @@ const ASSETS_TO_CACHE = [
   './',
   './index.html',
   './mateuna.js',
+  './materias.js',
   './mateuna.css',
   './preguntas.csv',
   './ejercicios.csv',
