@@ -8,7 +8,7 @@ const ASSETS_TO_CACHE = [
   './preguntas.csv',
   './ejercicios.csv',
   './estudio.html',
-  './pracrica.html',
+  './practica.html',
   './manifest.json',
   './assets/una_logo.png',
   'https://cdn.tailwindcss.com'
