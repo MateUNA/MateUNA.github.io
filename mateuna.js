@@ -179,7 +179,7 @@ async function fetchQuestions() {
     }
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=Preguntas`);
+        const response = await fetch(`${WEB_APP_URL}?sheet=Preguntas&materia=${materiaActiva}`);
         const remoteData = await response.json();
         
         if (Array.isArray(remoteData) && remoteData.length > 0) {
@@ -384,12 +384,13 @@ function selectOption(selectedBtn, isCorrect) {
 function submitQuiz() {
     if (selectedAnswerCorrect === null) return;
 
-    const payload = {
-        email: currentUser ? currentUser.email : "offline@estudiante.una",
-        name: currentUser ? currentUser.name : "Estudiante",
-        objective: currentObjective,
-        isCorrect: selectedAnswerCorrect
-    };
+   const payload = {
+    email: currentUser ? currentUser.email : "offline@estudiante.una",
+    name: currentUser ? currentUser.name : "Estudiante",
+    objective: currentObjective,
+    isCorrect: selectedAnswerCorrect,
+    materia: materiaActiva
+};
 
     const btn = document.getElementById('submit-btn');
     if (btn) {
@@ -513,7 +514,7 @@ async function loadPlanCursoDynamic(container) {
     `;
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?action=getPlanCurso`);
+        const response = await fetch(`${WEB_APP_URL}?action=getPlanCurso&materia=${materiaActiva}`);
         const planData = await response.json();
 
         if (!planData || planData.length === 0) {
@@ -572,7 +573,7 @@ async function loadPlanCursoDynamic(container) {
 async function loadSheetDataAsTable(sheetName, container, title) {
     container.innerHTML = `<h2 class="text-xl font-bold text-blue-900 mb-4">${title}</h2><p class="text-slate-400 text-sm">Cargando datos desde Google Sheets...</p>`;
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=${sheetName}`);
+        const response = await fetch(`${WEB_APP_URL}?sheet=${sheetName}&materia=${materiaActiva}`);
         const data = await response.json();
         
         if (!data || data.length === 0) {
@@ -644,7 +645,7 @@ async function loadStudentGradesSheet(container) {
     }
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=Notas`);
+        const response = await fetch(`${WEB_APP_URL}?sheet=Notas&materia=${materiaActiva}`);
         const data = await response.json();
 
         if (!data || !Array.isArray(data) || data.length === 0) {
@@ -788,49 +789,21 @@ function loginOfflineMode() {
     fetchQuestions();
 }
 
-/**
- * Cambia la materia activa según el código seleccionado en el menú desplegable
- * y actualiza los objetivos/materiales mostrados.
- * @param {string} codigo - Código de la materia (ej: '751', '752', '766')
- */
 function cambiarMateria(codigo) {
     if (!codigo) return;
-
-    // 1. Actualizar la variable o estado global de la materia si lo utilizas
-    if (typeof materiaActual !== 'undefined') {
-        materiaActual = codigo;
-    }
-
-    // 2. Guardar la preferencia en localStorage para recordar la selección
-    localStorage.setItem('materia_seleccionada', codigo);
-
-    // 3. Filtrar y renderizar los objetivos de la materia seleccionada
-    if (typeof renderizarObjetivos === 'function') {
-        renderizarObjetivos(codigo);
-    } else if (typeof cargarDatosMateria === 'function') {
-        cargarDatosMateria(codigo);
-    } else {
-        // Si tienes una lista global de datos (ej: window.datosEstudio), filtramos directamente:
-        filtrarContenidoPorMateria(codigo);
-    }
-}
-
-/**
- * Función auxiliar para filtrar y actualizar los elementos en el DOM
- * @param {string} codigo 
- */
-function filtrarContenidoPorMateria(codigo) {
-    const contenedor = document.getElementById('objetivos-container');
-    if (!contenedor || !window.datosEstudio) return;
-
-    // Filtrar los datos cargados desde Google Apps Script o CSV
-    const datosFiltrados = window.datosEstudio.filter(item => {
-        const codMateria = item.codigoMateria || item.materia || item.codigo;
-        return String(codMateria).trim() === String(codigo).trim();
-    });
-
-    // Volver a renderizar las tarjetas/objetivos
-    if (typeof mostrarTarjetas === 'function') {
-        mostrarTarjetas(datosFiltrados);
+    materiaActiva = codigo;
+    localStorage.setItem('mateuna_materia_activa', codigo);
+    
+    // Recargar preguntas y vista activa para la nueva materia
+    fetchQuestions();
+    
+    // Si la vista actual no es el quiz, refresca la sección
+    const dynamicView = document.getElementById('view-dynamic');
+    if (dynamicView && !dynamicView.classList.contains('hidden')) {
+        const activeNavBtn = document.querySelector('aside button.bg-blue-50');
+        if (activeNavBtn) {
+            const sectionKey = activeNavBtn.id.replace('nav-', '');
+            showSection(sectionKey);
+        }
     }
 }
