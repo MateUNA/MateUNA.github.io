@@ -85,18 +85,19 @@
         <!-- MENÚ LATERAL (SIDEBAR) -->
         <aside id="sidebar-menu" class="hidden md:block bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-1 md:col-span-1">
             <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>            
-            <a href="./estudio.html">
-                <button id="nav-estudio" style="background-color:rgb(245 158 11);color:rgb(30 27 75)" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                    📚 Ir a Central de Estudio
-                </button>
-            </a>
+            
             <!-- Selector global de materia -->
             <select id="materia-select" onchange="cambiarMateria(this.value)" class="text-xs bg-slate-100 font-semibold border-none rounded-lg px-2 py-1 text-slate-700 cursor-pointer">
               <option value="175">Matemática I (175/176/177)</option>
               <option value="178">Matemática II (178/179)</option>
               <option value="768">Topologia (768)</option>
             </select>
-            <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-3 py-1.5 rounded-lg">Salir</button>         
+            <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-3 py-1.5 rounded-lg">Salir</button>
+            <a href="./estudio.html">
+                <button id="nav-estudio" style="background-color:rgb(245 158 11);color:rgb(30 27 75)" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
+                    📚 Ir a Central de Estudio
+                </button>
+            </a>
             <button onclick="showSection('quiz')" id="nav-quiz" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">📊 Evaluaciones / Quiz</button>
             <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
             <button onclick="showSection('fundamentacion')" id="nav-fundamentacion" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📖 Fundamentación</button>
