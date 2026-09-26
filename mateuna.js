@@ -1,4 +1,5 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbw7-YyOKPtnEpcKynE2L1aiQUPSZUTMltZl2CrqBIZQH_VuxL32NYpkwNmPEHeMyzMk/exec";
+
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbyNCyI-wAFkH_1hc-v3fBpoSCzaGeBAAMjwqFGAm4Wo_-TG5eAfdgKq51hU8DNuuD1K/exec";
 let currentUser = null;
 let selectedAnswerCorrect = null;
 let currentObjective = "1.1";
@@ -46,7 +47,7 @@ const siteContent = {
                     </li>
                 </ol>
             </p>
-            <p> Dependiendo de la carrera deberas utilizar alguno de estos textos</p>
+            <p class="mt-4"> Dependiendo de la carrera deberás utilizar alguno de estos textos:</p>
             <ol class="list-decimal list-inside mt-2 space-y-1">
                 <li class="font-bold text-blue-900">
                      <a href="https://drive.google.com/file/d/1UNT-QvUN_jI0FY9-ib0v0D6R27DE3zVy/view?usp=sharing" target="_blank" class="underline"> 175 </a>
@@ -60,113 +61,64 @@ const siteContent = {
             </ol>
         `
     },
-    plan: {
-        title: "Plan de Curso y Ruta de Estudio",
-        html: `
-            <div class="space-y-4">
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900">Unidad I: Conjuntos Numéricos</h4>
-                    <p class="text-xs text-slate-500 mb-2">Objetivo: Emplear de manera lógica los conceptos y técnicas de números naturales, enteros, racionales y reales.</p>
-                    <p class="font-bold text-blue-900 mb-2">
-                        <a href="https://drive.google.com/file/d/1s8ZV983yeUz-hzJSosve1bFx878NtoXe/view?usp=sharing" target="_blank" class="underline"> 📖 TEXTO: CONJUNTOS NUMÉRICOS </a>
-                    </p>
-                    <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                        <li><strong>Obj. 1.1: Naturales, enteros, racionales y uso de calculadora.</strong></li>
-                            <ol>
-                                <li>• Números naturales.</li>
-                                <li>• Números Enteros</li>
-                                <li>• Uso de la calculadora.</li>
-                                <li>• Operaciones con los números Racionales, Orden en Q.</li>
-                                <li>• Ecuaciones con soluciones Racionales.</li>
-                                <li>• Aplicaciones.</li>
-                            </ol>
-                        <li><strong>Obj. 1.2: Números reales y aproximaciones decimales.</strong></li>
-                            <ol>
-                                <li>• Expresiones periódicas y no periódicas.</li>
-                                <li>• Números Irracionales y Números Reales.</li>
-                                <li>• Operaciones con los Números Reales.</li>
-                                <li>• Aproximaciones Decimales de Números Reales.</li>
-                            </ol>
-                        <li><strong>Obj. 1.3: Relación de orden en R, desigualdades y valor absoluto.</strong></li>
-                            <ol>
-                                <li>• Orden en R. Desigualdades, Ecuaciones e Inecuaciones.</li>
-                                <li>• Valor absoluto de un Número Real. Distancia en R.</li>
-                                <li>• Intervalos en R.</li>
-                                <li>• Aplicaciones</li>
-                            </ol>
-                    </ul>
-                </div>
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900">Unidad II: Funciones y Representaciones Gráficas</h4>
-                    <p class="text-xs text-slate-500 mb-2">Objetivo: Demostrar de manera analítica problemas aplicando relaciones, funciones y gráficas.</p>
-                    <p class="font-bold text-blue-900 mb-2">
-                        <a href="https://drive.google.com/file/d/1o7rBbGf7SMUv-MMpf0dPyNyX4h3tZEn4/view?usp=sharing" target="_blank" class="underline"> 📖 TEXTO: FUNCIONES </a>
-                    </p>
-                    <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                        <li><strong>Obj. 2.1: Sistemas de coordenadas y distancia entre puntos.</strong></li>
-                            <ol>
-                                <li>• Sistemas de Coordenadas.</li>
-                                <li>• Distancia entre dos puntos de un plano.</li>
-                                <li>• Regiones de un plano, ecuaciones, inecuaciones con dos variables.</li>
-                                <li>• Relaciones de proporcionalidad y porcentajes, rectas y semiplanos de un plano.</li>
-                                <li>• Relaciones y funciones, nociones generales.</li>
-                            </ol>
-                        <li><strong>Obj. 2.2: Funciones elementales y composición de funciones.</strong></li>
-                            <ol>                                
-                                <li>• Funciones elementales: 
-                                    <ul>
-                                        <li> ☆ Polinómicas</li>
-                                        <li> ☆ Racionales</li>
-                                        <li> ☆ Exponenciales</li> 
-                                        <li> ☆ Logarítmicas</li> 
-                                        <li> ☆ Sucesiones</li>
-                                    </ul>
-                                </li>
-                                <li>• Propiedades de las funciones.</li>
-                                <li>• Álgebra de funciones: 
-                                    <ul> 
-                                        <li> ☆ Composición de funciones</li>
-                                        <li> ☆ Funciones inyectivas</li> 
-                                        <li> ☆ Funciones sobreyectivas</li> 
-                                        <li> ☆ Funciones biyectivas</li> 
-                                        <li> ☆ Función inversa</li>
-                                    </ul>
-                                </li>                            
-                            </ol>
-                        <li><strong>Obj. 2.3: Representaciones gráficas y variables estadísticas.</strong></li>
-                            <ol>
-                                <li>• Representaciones gráficas: diagramas de barras, de líneas, tortas, (sectores circulares) y pictogramas.</li>
-                                <li>• Variables: continuas y discretas.</li>
-                                <li>• Representaciones gráficas de datos.</li>
-                                <li>• Escalas de representación de números en una recta.</li>
-                            </ol>
-                    </ul>
-                </div>
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900">Unidad III: Sucesiones, Límite y Continuidad</h4>
-                    <p class="text-xs text-slate-500 mb-2">Objetivo: Aplicar límites y continuidad a sucesiones y funciones.</p>
-                    <p class="font-bold text-blue-900 mb-2">
-                        <a href="https://drive.google.com/file/d/1Ic_hcviAfr7G2eEhrLNf4FT5rnevGAhs/view?usp=sharing" target="_blank" class="underline"> 📖 TEXTO: SUCESIONES, LÍMITES Y CONTINUIDAD</a>
-                    </p>
-                    <ul class="text-sm text-slate-600 list-disc list-inside space-y-1">
-                        <li><strong>Obj. 3.1: Sucesiones y límites de sucesiones.</strong></li>
-                        <li><strong>Obj. 3.2: Límites de funciones y técnicas de cálculo.</strong></li>
-                        <li><strong>Obj. 3.3: Funciones continuas, Teorema de Bolzano y Valor Intermedio.</strong></li>
-                    </ul>
-                </div>
-            </div>
-        `
-    },
     ruta: {
         title: "Ruta de Estudio Recomendada",
         html: `
-            <p class="text-slate-600 mb-4">Para garantizar el éxito académico en la modalidad a distancia de la UNA, te recomendamos seguir esta rutina:</p>
-            <ol class="list-decimal list-inside space-y-2 text-slate-600 text-sm">
-                <li><strong>Organiza tu tiempo:</strong> Emplea al menos 3 horas diarias, 5 días a la semana por cada objetivo (mínimo 26 horas de estudio por objetivo).</li>
-                <li><strong>Lectura previa:</strong> Lee detalladamente la introducción y el cuadro resumen de repaso antes de abordar cada unidad.</li>
-                <li><strong>Práctica constante:</strong> Resuelve los ejercicios propuestos en el Módulo y apóyate en los quizzes interactivos de esta plataforma.</li>
-                <li><strong>Aprendizaje colaborativo:</strong> Organiza grupos de estudio de 3 o 4 personas para debatir dudas.</li>
-            </ol>
+            <p class="text-slate-600 mb-4">Para un estudiante nuevo en la Universidad Nacional Abierta (UNA), adaptarse a la modalidad a distancia es más sencillo si sigues esta ruta de trabajo ordenada:</p>
+
+            <div class="space-y-4">
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">1. Conoce las reglas del juego (Plan de Curso e Instructivo Oficial)</h4>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
+                        <li><strong>Revisa los enlaces de utilidad:</strong> Antes de empezar, entra en la sección de <strong>Links Importantes</strong> para consultar el Plan de Curso oficial y el blog de Diseño Académico UNA donde se publican las evaluaciones.</li>
+                        <li><strong>Entiende la evaluación (Los 2 TSP):</strong> La materia se evalúa mediante dos <strong>Trabajos Sustitutivos de Pruebas (TSP1 y TSP2)</strong>, los cuales evalúan el primer y segundo 50% de los objetivos, respectivamente.</li>
+                        <li><strong>¿Qué es un TSP y cómo se responde?</strong> Es un examen para resolver en casa donde debes desarrollar analítica y algebraicamente cada paso respaldado por el texto UNA. Cuentas con un lapso continuo de máximo 48 horas desde su publicación hasta la entrega (no hay prórrogas).</li>
+                        <li><strong>Formato y envío estricto:</strong> 
+                            <ul class="list-circle list-inside ml-4 space-y-0.5 text-xs text-slate-500 mt-1">
+                                <li>• Debes incluir obligatoriamente la portada oficial.</li>
+                                <li>• Si lo haces a mano, usa bolígrafo o marcador fino negro con letra clara; si es en computadora, usa tipo Arial 11 o Times New Roman 12 con editor de ecuaciones.</li>
+                                <li>• Guarda todo en un <strong>único archivo PDF</strong> con la nomenclatura requerida: <code class="bg-slate-100 text-slate-700 px-1 rounded">Código / TSP / Nombre y Apellido / C.I. / Lapso</code>.</li>
+                                <li>• La entrega se realiza por la vía estipulada para tu Centro Local (Google Classroom asignado).</li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">2. Revisa los Objetivos y contacta a tu Asesor</h4>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
+                        <li>Consulta en el Plan de Curso qué objetivos corresponden al <strong>TSP1</strong> y cuáles al <strong>TSP2</strong>.</li>
+                        <li><strong>Mantén contacto con tus asesores:</strong> Identifica quién es tu profesor o asesor designado para la materia en tu Centro Local para aclarar dudas administrativas o de contenido.</li>
+                    </ul>
+                </div>
+
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">3. Busca tus Objetivos y Materiales en la App</h4>
+                    <p class="text-slate-600 text-sm">Dirígete a la sección <strong>"Plan de Curso"</strong> de esta plataforma:</p>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm mt-1">
+                        <li>Selecciona el objetivo específico que vas a preparar.</li>
+                        <li>Consulta directamente los PDF de guías y módulos de estudio correspondientes.</li>
+                    </ul>
+                </div>
+
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">4. Asiste a las Jornadas de Orientación</h4>
+                    <p class="text-slate-600 text-sm">Revisa la programación de las clases y jornadas de orientación presenciales o virtuales organizadas por tu Centro Local. Confirma qué objetivos se tratarán para repasarlos previamente en la app y llegar con dudas concretas.</p>
+                </div>
+
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">5. Práctica con Libros, Ejemplos y Quizzes</h4>
+                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
+                        <li><strong>Estudio del texto base:</strong> Desarrolla los ejercicios propuestos del libro o módulo oficial respaldando cada procedimiento algebraico.</li>
+                        <li><strong>Validación en la app:</strong> Pon a prueba lo aprendido resolviendo los <strong>Quizzes Interactivos</strong> de nuestra plataforma para evaluar tu nivel de comprensión inmediata.</li>
+                    </ul>
+                </div>
+
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-1">6. Entrena con Exámenes Viejos y Problemas Resueltos</h4>
+                    <p class="text-slate-600 text-sm">Cuando te aproximes a la fecha del TSP, entra a la sección de <strong>"Exámenes Viejos"</strong> en el menú lateral. Selecciona el objetivo a evaluar y resuelve modelos anteriores guiándote paso a paso.</p>
+                </div>
+            </div>
         `
     }
 };
@@ -206,7 +158,6 @@ async function fetchQuestions() {
     const questionTextEl = document.getElementById('question-text');
     let loadedFromLocal = false;
 
-    // FASE 1: Precarga instantánea desde CSV Local
     try {
         const localResponse = await fetch('./preguntas.csv');
         if (localResponse.ok) {
@@ -221,14 +172,13 @@ async function fetchQuestions() {
             }
         }
     } catch (e) {
-        console.warn("No se encontró preguntas.csv local o falló su lectura. Esperando red...", e);
+        console.warn("No se encontró preguntas.csv local o falló su lectura.", e);
     }
 
     if (!loadedFromLocal && questionTextEl) {
         questionTextEl.innerText = "Conectando con la base de datos remota...";
     }
 
-    // FASE 2: Sincronización en segundo plano con Google Sheets
     try {
         const response = await fetch(`${WEB_APP_URL}?sheet=Preguntas`);
         const remoteData = await response.json();
@@ -236,7 +186,6 @@ async function fetchQuestions() {
         if (Array.isArray(remoteData) && remoteData.length > 0) {
             const normalizedRemote = normalizeQuestionsKeys(remoteData);
             
-            // Actualizar si hay diferencias o si no se cargó el CSV
             if (!loadedFromLocal || JSON.stringify(allQuestions) !== JSON.stringify(normalizedRemote)) {
                 allQuestions = normalizedRemote;
                 populateObjectiveButtons();
@@ -397,7 +346,6 @@ function loadQuestionsForCurrentObjective() {
         { text: qData.Opcion3_Incorrecta2, correct: false }
     ].filter(opt => opt.text && String(opt.text).trim() !== "");
 
-    // Mezclar las opciones al azar
     for (let i = optionsArray.length - 1; i > 0; i--) {
         const j = Math.floor(Math.random() * (i + 1));
         [optionsArray[i], optionsArray[j]] = [optionsArray[j], optionsArray[i]];
@@ -450,10 +398,8 @@ function submitQuiz() {
         btn.disabled = true;
     }
 
-    // Evaluar resultado localmente para retroalimentación inmediata
     const isCorrect = selectedAnswerCorrect;
 
-    // Enviar resultado a Google Sheets
     fetch(WEB_APP_URL, {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
@@ -501,6 +447,7 @@ function showFeedbackResult(isCorrect) {
         `;
     }
 }
+
 function logoutUser() {
     if(timerInterval) clearInterval(timerInterval);
     localStorage.removeItem('mateuna_user');
@@ -552,8 +499,74 @@ function showSection(sectionKey) {
         loadSheetDataAsTable('Examenes', dynamicView, 'Fechas de Exámenes y Calendario Oficial');
     } else if (sectionKey === 'clases') {
         loadSheetDataAsTable('Clases', dynamicView, 'Fechas y Horarios de Clases');
+    } else if (sectionKey === 'plan') {
+        loadPlanCursoDynamic(dynamicView); // CORREGIDO: Se pasa la referencia del elemento HTML directamente
     } else if (sectionKey === 'viejos') {
         loadSheetDataAsTable('Viejos', dynamicView, 'Archivo de Exámenes Anteriores');
+    }
+}
+
+// Función para cargar e inyectar el Plan de Curso dinámico desde Google Sheets
+async function loadPlanCursoDynamic(container) {
+    container.innerHTML = `
+        <h2 class="text-xl font-bold text-blue-900 mb-4">Plan de Curso y Ruta de Estudio</h2>
+        <p class="text-slate-400 text-sm">Cargando unidades y contenido desde Google Sheets...</p>
+    `;
+
+    try {
+        const response = await fetch(`${WEB_APP_URL}?action=getPlanCurso`);
+        const planData = await response.json();
+
+        if (!planData || planData.length === 0) {
+            container.innerHTML = `
+                <h2 class="text-xl font-bold text-blue-900 mb-4">Plan de Curso y Ruta de Estudio</h2>
+                <p class="text-slate-500 text-sm">No hay unidades cargadas en la pestaña PlanCurso.</p>
+            `;
+            return;
+        }
+
+        let html = `
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Plan de Curso y Ruta de Estudio</h2>
+            <div class="space-y-4">
+        `;
+
+        planData.forEach(item => {
+            html += `
+                <div class="border border-slate-200 p-4 rounded-xl">
+                    <h4 class="font-bold text-blue-900 mb-2">${item.unidad}</h4>
+                    <ul class="text-sm text-slate-600 space-y-1.5 list-disc list-inside">
+            `;
+
+            item.temas.forEach(temaObj => {
+                // Si la celda de link no está vacía, genera la etiqueta <a> estilizada
+                if (temaObj.link) {
+                    html += `
+                        <li>
+                            <a href="${temaObj.link}" target="_blank" class="text-blue-700 hover:text-blue-900 underline font-medium transition">
+                                ${temaObj.texto} ↗
+                            </a>
+                        </li>
+                    `;
+                } else {
+                    html += `<li>${temaObj.texto}</li>`;
+                }
+            });
+
+            html += `
+                    </ul>
+                </div>
+            `;
+        });
+
+        html += `</div>`;
+        container.innerHTML = html;
+
+    } catch (e) {
+        console.error("Error al cargar Plan de Curso:", e);
+        container.innerHTML = `
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Plan de Curso y Ruta de Estudio</h2>
+            <p class="text-red-500 text-sm">Error al obtener los datos del Plan de Curso.</p>
+        `;
     }
 }
 
@@ -751,7 +764,7 @@ function toggleMobileMenu() {
         sidebar.classList.toggle('hidden');
     }
 }
-// Registro de Service Worker para PWA
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
