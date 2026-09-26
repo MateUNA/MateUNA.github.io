@@ -38,12 +38,7 @@
     <header class="bg-white shadow-sm py-4 px-6 flex justify-between items-center z-10 sticky top-0">
         <div class="flex items-center gap-3">
             <h1 class="text-xl font-bold text-blue-900">MateUNA</h1>
-            <!-- Selector global de materia -->
-            <select id="materia-select" onchange="cambiarMateria(this.value)" class="text-xs bg-slate-100 font-semibold border-none rounded-lg px-2 py-1 text-slate-700 cursor-pointer">
-              <option value="175">Matemática I (175/176/177)</option>
-              <option value="178">Matemática II (178/179)</option>
-              <option value="768">Topologia (768)</option>
-            </select>
+            
           </div>
         <div class="flex items-center gap-3">
             <button id="mobile-menu-btn" onclick="toggleMobileMenu()" class="md:hidden text-slate-700 focus:outline-none p-1">
@@ -95,6 +90,12 @@
                     📚 Ir a Central de Estudio
                 </button>
             </a>
+            <!-- Selector global de materia -->
+            <select id="materia-select" onchange="cambiarMateria(this.value)" class="text-xs bg-slate-100 font-semibold border-none rounded-lg px-2 py-1 text-slate-700 cursor-pointer">
+              <option value="175">Matemática I (175/176/177)</option>
+              <option value="178">Matemática II (178/179)</option>
+              <option value="768">Topologia (768)</option>
+            </select>
             <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-3 py-1.5 rounded-lg">Salir</button>         
             <button onclick="showSection('quiz')" id="nav-quiz" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">📊 Evaluaciones / Quiz</button>
             <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
