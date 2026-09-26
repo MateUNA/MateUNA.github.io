@@ -437,15 +437,7 @@ function showSection(sectionKey) {
     if (activeBtn) {
         activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
         activeBtn.classList.add('bg-blue-50', 'text-blue-900');
-    }
-
-    if (sectionKey === 'fundamentacion') {
-            loadFundamentacionDynamic(dynamicView);
-        } else if (siteContent[sectionKey]) {
-            dynamicView.innerHTML = `
-                <h2 class="text-xl font-bold text-blue-900 mb-4">${siteContent[sectionKey].title}</h2>
-                ${siteContent[sectionKey].html}`;
-    }
+    }     
 
     if (sectionKey === 'quiz') {
         quizView.classList.remove('hidden');
@@ -474,8 +466,10 @@ function showSection(sectionKey) {
     } else if (sectionKey === 'clases') {
         loadSheetDataAsTable('Clases', dynamicView, 'Fechas y Horarios de Clases');
     } else if (sectionKey === 'plan') {
-        loadPlanCursoDynamic(dynamicView); // CORREGIDO: Se pasa la referencia del elemento HTML directamente
-    } else if (sectionKey === 'viejos') {
+        loadPlanCursoDynamic(dynamicView); 
+    } else if (sectionKey === 'fundamentacion') {
+    loadFundamentacionDynamic(dynamicView);
+    }  else if (sectionKey === 'viejos') {
         loadSheetDataAsTable('Viejos', dynamicView, 'Archivo de Exámenes Anteriores');
     }
 }
