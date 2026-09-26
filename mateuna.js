@@ -787,3 +787,50 @@ function loginOfflineMode() {
     startSessionTimer();
     fetchQuestions();
 }
+
+/**
+ * Cambia la materia activa según el código seleccionado en el menú desplegable
+ * y actualiza los objetivos/materiales mostrados.
+ * @param {string} codigo - Código de la materia (ej: '751', '752', '766')
+ */
+function cambiarMateria(codigo) {
+    if (!codigo) return;
+
+    // 1. Actualizar la variable o estado global de la materia si lo utilizas
+    if (typeof materiaActual !== 'undefined') {
+        materiaActual = codigo;
+    }
+
+    // 2. Guardar la preferencia en localStorage para recordar la selección
+    localStorage.setItem('materia_seleccionada', codigo);
+
+    // 3. Filtrar y renderizar los objetivos de la materia seleccionada
+    if (typeof renderizarObjetivos === 'function') {
+        renderizarObjetivos(codigo);
+    } else if (typeof cargarDatosMateria === 'function') {
+        cargarDatosMateria(codigo);
+    } else {
+        // Si tienes una lista global de datos (ej: window.datosEstudio), filtramos directamente:
+        filtrarContenidoPorMateria(codigo);
+    }
+}
+
+/**
+ * Función auxiliar para filtrar y actualizar los elementos en el DOM
+ * @param {string} codigo 
+ */
+function filtrarContenidoPorMateria(codigo) {
+    const contenedor = document.getElementById('objetivos-container');
+    if (!contenedor || !window.datosEstudio) return;
+
+    // Filtrar los datos cargados desde Google Apps Script o CSV
+    const datosFiltrados = window.datosEstudio.filter(item => {
+        const codMateria = item.codigoMateria || item.materia || item.codigo;
+        return String(codMateria).trim() === String(codigo).trim();
+    });
+
+    // Volver a renderizar las tarjetas/objetivos
+    if (typeof mostrarTarjetas === 'function') {
+        mostrarTarjetas(datosFiltrados);
+    }
+}
