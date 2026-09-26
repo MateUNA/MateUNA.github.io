@@ -777,30 +777,19 @@ function cambiarMateria(codigo) {
 }
 
 async function loadFundamentacionDynamic(container) {
-    // Ajuste defensivo: verifica la función o variable global con fallbacks
-    let materia;
-    if (typeof getMateriaActual === 'function') {
-        materia = getMateriaActual();
-    } else if (typeof MATERIAS_CONFIG !== 'undefined' && typeof materiaActiva !== 'undefined') {
-        materia = MATERIAS_CONFIG[materiaActiva] || MATERIAS_CONFIG["175"];
-    } else {
-        materia = { codigo: "175", nombre: "Matemática I" };
-    }
-
-    const codMateria = (typeof materiaActiva !== 'undefined') ? materiaActiva : '175';
-
+    const materia = getMateriaActual();
     container.innerHTML = `
         <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso - ${materia.nombre}</h2>
         <p class="text-slate-400 text-sm">Cargando la fundamentación desde la base de datos...</p>
     `;
 
     try {
-        const response = await fetch(`${WEB_APP_URL_CENTRAL}?action=getFundamentacion&materia=${codMateria}`);
+        const response = await fetch(`${WEB_APP_URL}?action=getFundamentacion&materia=${materiaActiva}`);
         const data = await response.json();
 
         if (!data || Object.keys(data).length === 0 || data.error) {
             container.innerHTML = `
-                <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso - ${materia.nombre}</h2>
+                <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso</h2>
                 <p class="text-slate-500 text-sm">No se encontró información de fundamentación cargada para esta asignatura.</p>
             `;
             return;
@@ -837,7 +826,7 @@ async function loadFundamentacionDynamic(container) {
             librosCarrerasHtml += `</ol>`;
         }
 
-        // Renderizado dinámico en el DOM
+        // Inyección dinámica respetando la estructura visual
         container.innerHTML = `
             <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso (${materia.nombre})</h2>
             
