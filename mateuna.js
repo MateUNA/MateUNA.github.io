@@ -1,4 +1,4 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzQCCZbk8JNMPpxJ44JgdahilWF5pZ4rMYx_5En3Iqq9UXmrVKevpV_wT6i1zv_r3N4/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeVbtuoroR5M99FoIpPHmbNqRKuomE11FBrnUrNQon6xJ6z1S28DlXNaewUFnH6MVE/exec";
 let currentUser = null;
 let selectedAnswerCorrect = null;
 let currentObjective = "1.1";
@@ -25,41 +25,7 @@ setInterval(() => {
     updateStudyTimerDisplay(studySeconds);
 }, 1000);
 
-const siteContent = {
-    fundamentacion: {
-        title: "Fundamentación del Curso",
-        html: `
-            <p class="mb-4 text-slate-600">El curso de <strong>Matemática I</strong> (Código: 175-176-177) forma parte del ciclo de Estudios Generales de la Universidad Nacional Abierta (UNA). Es un curso básico y obligatorio orientando sus estrategias hacia la resolución de ejercicios y problemas para promover la integración entre la teoría y la práctica.</p>
-            <h3 class="font-bold text-blue-900 mt-4 mb-2">Objetivo Global de la Asignatura</h3>
-            <p class="text-slate-600 bg-blue-50 p-4 rounded-xl border border-blue-100">Aplicar de manera coherente y sistemática los conceptos y técnicas relacionados con conjuntos numéricos, funciones, límites y la continuidad de funciones para la resolución de problemas tanto en ramas de la matemática como en otras disciplinas.</p>
-            <h3 class="font-bold text-blue-900 mt-4 mb-2">Material Instruccional Obligatorio</h3>
-            <p class="text-slate-600">Texto UNA: Escobar B., Lameda A., Orellana C., (2000 / 2017) "Matemática I", el cual consta de tres Títulos de Instrucción:
-                <ol class="list-decimal list-inside mt-2 space-y-1">
-                    <li class="font-bold text-blue-900">
-                        <a href="https://drive.google.com/file/d/1s8ZV983yeUz-hzJSosve1bFx878NtoXe/view?usp=sharing" target="_blank" class="underline"> Conjuntos Numéricos </a>
-                    </li>
-                    <li class="font-bold text-blue-900">
-                        <a href="https://drive.google.com/file/d/1o7rBbGf7SMUv-MMpf0dPyNyX4h3tZEn4/view?usp=sharing" target="_blank" class="underline"> Funciones y Representaciones Gráficas </a>
-                    </li>
-                    <li class="font-bold text-blue-900">
-                        <a href="https://drive.google.com/file/d/1Ic_hcviAfr7G2eEhrLNf4FT5rnevGAhs/view?usp=sharing" target="_blank" class="underline"> Sucesiones, Nociones Elementales de Límite y Continuidad </a>
-                    </li>
-                </ol>
-            </p>
-            <p class="mt-4"> Dependiendo de la carrera deberás utilizar alguno de estos textos:</p>
-            <ol class="list-decimal list-inside mt-2 space-y-1">
-                <li class="font-bold text-blue-900">
-                     <a href="https://drive.google.com/file/d/1UNT-QvUN_jI0FY9-ib0v0D6R27DE3zVy/view?usp=sharing" target="_blank" class="underline"> 175 </a>
-                </li>
-                <li class="font-bold text-blue-900">
-                     <a href="https://drive.google.com/file/d/1pGpCIIBXOqGZ8Hk77NqBe-XZh7s0n3IX/view?usp=sharing" target="_blank" class="underline"> 176</a>
-                </li>
-                <li class="font-bold text-blue-900">
-                     <a href="https://drive.google.com/file/d/1OeT2wMbwokRvrSxqhqQR6hGUL_-F5g4b/view?usp=sharing" target="_blank" class="underline"> 177</a>
-                </li>
-            </ol>
-        `
-    },
+const siteContent = {    
     ruta: {
         title: "Ruta de Estudio Recomendada",
         html: `
@@ -473,6 +439,14 @@ function showSection(sectionKey) {
         activeBtn.classList.add('bg-blue-50', 'text-blue-900');
     }
 
+    if (sectionKey === 'fundamentacion') {
+            loadFundamentacionDynamic(dynamicView);
+        } else if (siteContent[sectionKey]) {
+            dynamicView.innerHTML = `
+                <h2 class="text-xl font-bold text-blue-900 mb-4">${siteContent[sectionKey].title}</h2>
+                ${siteContent[sectionKey].html}`;
+    }
+
     if (sectionKey === 'quiz') {
         quizView.classList.remove('hidden');
         dynamicView.classList.add('hidden');
@@ -805,5 +779,80 @@ function cambiarMateria(codigo) {
             const sectionKey = activeNavBtn.id.replace('nav-', '');
             showSection(sectionKey);
         }
+    }
+}
+
+async function loadFundamentacionDynamic(container) {
+    const materia = getMateriaActual();
+    container.innerHTML = `
+        <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso - ${materia.nombre}</h2>
+        <p class="text-slate-400 text-sm">Cargando la fundamentación desde la base de datos...</p>
+    `;
+
+    try {
+        const response = await fetch(`${WEB_APP_URL}?action=getFundamentacion&materia=${materiaActiva}`);
+        const data = await response.json();
+
+        if (!data || Object.keys(data).length === 0 || data.error) {
+            container.innerHTML = `
+                <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso</h2>
+                <p class="text-slate-500 text-sm">No se encontró información de fundamentación cargada para esta asignatura.</p>
+            `;
+            return;
+        }
+
+        // Construcción de la lista de Libros Principales
+        let librosPrincipalesHtml = '';
+        if (Array.isArray(data.libros_principales) && data.libros_principales.length > 0) {
+            librosPrincipalesHtml = `<ol class="list-decimal list-inside mt-2 space-y-1">`;
+            data.libros_principales.forEach(item => {
+                librosPrincipalesHtml += `
+                    <li class="font-bold text-blue-900">
+                        <a href="${item.url}" target="_blank" class="underline hover:text-blue-700">${item.titulo} ↗</a>
+                    </li>
+                `;
+            });
+            librosPrincipalesHtml += `</ol>`;
+        }
+
+        // Construcción de la lista de Libros por Carrera / Código
+        let librosCarrerasHtml = '';
+        if (Array.isArray(data.libros_carreras) && data.libros_carreras.length > 0) {
+            librosCarrerasHtml = `
+                <p class="mt-4 text-slate-700 font-medium">Dependiendo de tu carrera deberás utilizar alguno de estos textos:</p>
+                <ol class="list-decimal list-inside mt-2 space-y-1">
+            `;
+            data.libros_carreras.forEach(item => {
+                librosCarrerasHtml += `
+                    <li class="font-bold text-blue-900">
+                        <a href="${item.url}" target="_blank" class="underline hover:text-blue-700">Código ${item.codigo} ↗</a>
+                    </li>
+                `;
+            });
+            librosCarrerasHtml += `</ol>`;
+        }
+
+        // Inyección dinámica respetando la estructura visual
+        container.innerHTML = `
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso (${materia.nombre})</h2>
+            
+            <p class="mb-4 text-slate-600">${data.texto_fundamentacion || ''}</p>
+            
+            <h3 class="font-bold text-blue-900 mt-4 mb-2">Objetivo Global de la Asignatura</h3>
+            <p class="text-slate-600 bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
+                ${data.objetivo_global || ''}
+            </p>
+            
+            <h3 class="font-bold text-blue-900 mt-4 mb-2">Material Instruccional Obligatorio</h3>
+            ${librosPrincipalesHtml}
+            ${librosCarrerasHtml}
+        `;
+
+    } catch (e) {
+        console.error("Error al obtener la fundamentación:", e);
+        container.innerHTML = `
+            <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso</h2>
+            <p class="text-red-500 text-sm">Ocurrió un error al cargar la fundamentación desde Google Sheets.</p>
+        `;
     }
 }
