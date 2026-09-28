@@ -124,7 +124,7 @@ async function fetchQuestions() {
     let loadedFromLocal = false;
 
     try {
-        const localResponse = await fetch('./preguntas.csv');
+        const localResponse = await fetch('./preguntas/p_mate1_175.csv');
         if (localResponse.ok) {
             const csvText = await localResponse.text();
             const localData = parseCSV(csvText);
