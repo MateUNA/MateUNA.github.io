@@ -6,22 +6,22 @@ const MATERIAS_CONFIG = {
     codigo: "175",
     nombre: "Matemática I",
     scriptUrl: WEB_APP_URL_CENTRAL,
-    csvPreguntas: "./preguntas.csv",
-    csvEjercicios: "./ejercicios.csv"
+    csvPreguntas: "./preguntas/p_mate1_175.csv",
+    csvEjercicios: "./ejercicios/p_mate1_175.csv"
   },
   "178": {
     codigo: "178",
     nombre: "Matemática II",
     scriptUrl: WEB_APP_URL_CENTRAL,
-    csvPreguntas: "./preguntas.csv",
-    csvEjercicios: "./ejercicios.csv"
+    csvPreguntas: "./pregunta/p_mate2_178.csv",
+    csvEjercicios: "./ejercicios/p_mate2_178.csv"
   },    
   "768": {
     codigo: "768",
     nombre: "Topologia",
     scriptUrl: WEB_APP_URL_CENTRAL,
-    csvPreguntas: "./preguntas.csv",
-    csvEjercicios: "./ejercicios.csv"
+    csvPreguntas: "./preguntas/p_topologia_768.csv",
+    csvEjercicios: "./ejercicios/p_topologia_768.csv"
   }
 };
 
