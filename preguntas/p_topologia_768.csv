@@ -31,7 +31,7 @@ Objetivo,Pregunta,Opcion1_Correcta,Opcion2_Incorrecta1,Opcion3_Incorrecta2,
 2.2,El diámetro de un subconjunto no vacío $A$ en un espacio métrico se define como:,"$\sup\{d(x,y) : x,y \in A\}$","$\inf\{d(x,y) : x,y \in A\}$",La suma de todas las distancias,
 2.2,Dos métricas en un mismo conjunto $X$ son topológicamente equivalentes si:,Inducen exactamente los mismos abiertos,Dan los mismos valores numéricos para todo par,Ambas son acotadas,
 2.3,Una norma en un espacio vectorial $V$ debe cumplir para todo escalar $c$ y vector $v$ que $\Vert{}c v\Vert{} =$,$\Vert{}c\Vert{} \cdot \Vert{}v\Vert{}$,$c \cdot \Vert{}v\Vert{}$,$c^2 \cdot \Vert{}v\Vert{}$,
-2.3,"La métrica $d(x,y)$ naturalmente inducida por una norma $\Vert{}\cdot\Vert{}$ viene dada por:",$\Vert{}x - y\Vert{}$,$\Vert{}x\Vert{} + \Vert{}y\Vert{}$,$\Vert{}x \cdot y\Vert{}$,-2],[2,+∞)
+2.3,"La métrica $d(x,y)$ naturalmente inducida por una norma $\Vert{}\cdot\Vert{}$ viene dada por:",$\Vert{}x - y\Vert{}$,$\Vert{}x\Vert{} + \Vert{}y\Vert{}$,$\Vert{}x \cdot y\Vert{}$,
 2.3,Un espacio vectorial normado que es completo respecto a la métrica de su norma se llama:,Espacio de Banach,Espacio de Hilbert,Espacio de Hausdorff,
 2.3,"En todo espacio normado, la norma satisface la desigualdad:",$\Vert{}x + y\Vert{} \le \Vert{}x\Vert{} + \Vert{}y\Vert{}$,$\Vert{}x + y\Vert{} \ge \Vert{}x\Vert{} + \Vert{}y\Vert{}$,$\Vert{}x + y\Vert{} = \Vert{}x\Vert{} \cdot \Vert{}y\Vert{}$,
 2.3,Un espacio de Banach cuya norma proviene de un producto interno es un:,Espacio de Hilbert,Espacio métrico discreto,Espacio topológico trivial,
