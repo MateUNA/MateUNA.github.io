@@ -1,94 +1,26 @@
 const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzxz5bmHZK2ukteSfVh4fMNT-He7UgpbxLJWKXTv1_OJoqM6lLb1acBVNDG-F6M8GK_/exec";
 let currentUser = null;
 let selectedAnswerCorrect = null;
-let currentObjective = "1.1";
+let currentObjective = "";
 let allQuestions = [];
 
 let sessionSeconds = 0;
 let totalStudySeconds = parseInt(localStorage.getItem('mateuna_total_study_seconds')) || 0;
 let sessionTimerInterval = null;
-
-let sessionStartTime = null;
-let timerInterval = null;
-
 let objetivosDisponibles = [];
-let objetivoActual = null;
-
-let studySeconds = parseInt(localStorage.getItem('mateuna_study_seconds')) || 0;
-let currentWeekKey = getWeekKey(new Date());
-
-// Reiniciar contador semanal si cambió de semana
-let savedWeek = localStorage.getItem('mateuna_week_key');
-if (savedWeek !== currentWeekKey) {
-    studySeconds = 0;
-    localStorage.setItem('mateuna_week_key', currentWeekKey);
-    localStorage.setItem('mateuna_study_seconds', 0);
-}
-
-// Contador continuo de tiempo de estudio
-setInterval(() => {
-    studySeconds++;
-    localStorage.setItem('mateuna_study_seconds', studySeconds);
-    updateStudyTimerDisplay(studySeconds);
-}, 1000);
 
 const siteContent = {    
     ruta: {
         title: "Ruta de Estudio Recomendada",
         html: `
             <p class="text-slate-600 mb-4">Para un estudiante nuevo en la Universidad Nacional Abierta (UNA), adaptarse a la modalidad a distancia es más sencillo si sigues esta ruta de trabajo ordenada:</p>
-
             <div class="space-y-4">
                 <div class="border border-slate-200 p-4 rounded-xl">
                     <h4 class="font-bold text-blue-900 mb-1">1. Conoce las reglas del juego (Plan de Curso e Instructivo Oficial)</h4>
                     <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
                         <li><strong>Revisa los enlaces de utilidad:</strong> Antes de empezar, entra en la sección de <strong>Links Importantes</strong> para consultar el Plan de Curso oficial y el blog de Diseño Académico UNA donde se publican las evaluaciones.</li>
                         <li><strong>Entiende la evaluación (Los 2 TSP):</strong> La materia se evalúa mediante dos <strong>Trabajos Sustitutivos de Pruebas (TSP1 y TSP2)</strong>, los cuales evalúan el primer y segundo 50% de los objetivos, respectivamente.</li>
-                        <li><strong>¿Qué es un TSP y cómo se responde?</strong> Es un examen para resolver en casa donde debes desarrollar analítica y algebraicamente cada paso respaldado por el texto UNA. Cuentas con un lapso continuo de máximo 48 horas desde su publicación hasta la entrega (no hay prórrogas).</li>
-                        <li><strong>Formato y envío estricto:</strong> 
-                            <ul class="list-circle list-inside ml-4 space-y-0.5 text-xs text-slate-500 mt-1">
-                                <li>• Debes incluir obligatoriamente la portada oficial.</li>
-                                <li>• Si lo haces a mano, usa bolígrafo o marcador fino negro con letra clara; si es en computadora, usa tipo Arial 11 o Times New Roman 12 con editor de ecuaciones.</li>
-                                <li>• Guarda todo en un <strong>único archivo PDF</strong> con la nomenclatura requerida: <code class="bg-slate-100 text-slate-700 px-1 rounded">Código / TSP / Nombre y Apellido / C.I. / Lapso</code>.</li>
-                                <li>• La entrega se realiza por la vía estipulada para tu Centro Local (Google Classroom asignado).</li>
-                            </ul>
-                        </li>
                     </ul>
-                </div>
-
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-1">2. Revisa los Objetivos y contacta a tu Asesor</h4>
-                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
-                        <li>Consulta en el Plan de Curso qué objetivos corresponden al <strong>TSP1</strong> y cuáles al <strong>TSP2</strong>.</li>
-                        <li><strong>Mantén contacto con tus asesores:</strong> Identifica quién es tu profesor o asesor designado para la materia en tu Centro Local para aclarar dudas administrativas o de contenido.</li>
-                    </ul>
-                </div>
-
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-1">3. Busca tus Objetivos y Materiales en la App</h4>
-                    <p class="text-slate-600 text-sm">Dirígete a la sección <strong>"Plan de Curso"</strong> de esta plataforma:</p>
-                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm mt-1">
-                        <li>Selecciona el objetivo específico que vas a preparar.</li>
-                        <li>Consulta directamente los PDF de guías y módulos de estudio correspondientes.</li>
-                    </ul>
-                </div>
-
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-1">4. Asiste a las Jornadas de Orientación</h4>
-                    <p class="text-slate-600 text-sm">Revisa la programación de las clases y jornadas de orientación presenciales o virtuales organizadas por tu Centro Local. Confirma qué objetivos se tratarán para repasarlos previamente en la app y llegar con dudas concretas.</p>
-                </div>
-
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-1">5. Práctica con Libros, Ejemplos y Quizzes</h4>
-                    <ul class="list-disc list-inside space-y-1 text-slate-600 text-sm">
-                        <li><strong>Estudio del texto base:</strong> Desarrolla los ejercicios propuestos del libro o módulo oficial respaldando cada procedimiento algebraico.</li>
-                        <li><strong>Validación en la app:</strong> Pon a prueba lo aprendido resolviendo los <strong>Quizzes Interactivos</strong> de nuestra plataforma para evaluar tu nivel de comprensión inmediata.</li>
-                    </ul>
-                </div>
-
-                <div class="border border-slate-200 p-4 rounded-xl">
-                    <h4 class="font-bold text-blue-900 mb-1">6. Entrena con Exámenes Viejos y Problemas Resueltos</h4>
-                    <p class="text-slate-600 text-sm">Cuando te aproximes a la fecha del TSP, entra a la sección de <strong>"Exámenes Viejos"</strong> en el menú lateral. Selecciona el objetivo a evaluar y resuelve modelos anteriores guiándote paso a paso.</p>
                 </div>
             </div>
         `
@@ -138,7 +70,7 @@ async function fetchQuestions() {
             
             if (localData.length > 0) {
                 allQuestions = normalizeQuestionsKeys(localData);
-                inicializarObjetivosQuiz(allQuestions); // <-- LLAMADA DINÁMICA
+                inicializarObjetivosQuiz(allQuestions);
                 loadedFromLocal = true;
             }
         }
@@ -159,7 +91,7 @@ async function fetchQuestions() {
             
             if (!loadedFromLocal || JSON.stringify(allQuestions) !== JSON.stringify(normalizedRemote)) {
                 allQuestions = normalizedRemote;
-                inicializarObjetivosQuiz(allQuestions); // <-- LLAMADA DINÁMICA
+                inicializarObjetivosQuiz(allQuestions);
             }
         }
     } catch (err) {
@@ -171,14 +103,6 @@ async function fetchQuestions() {
 }
 
 // --- GESTIÓN DE INTERFAZ Y QUIZ ---
-
-function getWeekKey(d) {
-    const date = new Date(d.getTime());
-    date.setHours(0, 0, 0, 0);
-    date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7);
-    const week1 = new Date(date.getFullYear(), 0, 4);
-    return date.getFullYear() + '-W' + Math.ceil((((date - week1) / 86400000) + 1) / 7);
-}
 
 function decodeJwtResponse(token) {
     let base64Url = token.split('.')[1];
@@ -199,6 +123,8 @@ function renderAppUI(userData) {
     if (userNameElem) {
         userNameElem.innerText = `Hola, ${userData.name}`;
         userNameElem.dataset.email = userData.email;
+        // Guardar también el correo separado para las estadísticas
+        localStorage.setItem('mateuna_user_email', userData.email);
     }
     const menuBtn = document.getElementById('mobile-menu-btn');
     if (menuBtn) menuBtn.classList.remove('hidden');
@@ -223,9 +149,53 @@ function handleCredentialResponse(response) {
     fetchQuestions();
 }
 
+function startSessionTimer() {
+    sessionSeconds = 0;
+    if (sessionTimerInterval) clearInterval(sessionTimerInterval);
+    
+    sessionTimerInterval = setInterval(() => {
+        sessionSeconds++;
+        totalStudySeconds++;
+        
+        if (totalStudySeconds % 10 === 0) {
+            localStorage.setItem('mateuna_total_study_seconds', totalStudySeconds);
+        }
+        
+        updateTimersDisplay();
+    }, 1000);
+}
+
+function updateTimersDisplay() {
+    const sessMin = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+    const sessSec = (sessionSeconds % 60).toString().padStart(2, '0');
+    const sessionElem = document.getElementById('session-timer');
+    if (sessionElem) sessionElem.innerText = `⏱️ Sesión: ${sessMin}:${sessSec}`;
+
+    const totalHours = Math.floor(totalStudySeconds / 3600);
+    const totalMins = Math.floor((totalStudySeconds % 3600) / 60);
+    const totalElem = document.getElementById('total-study-timer');
+    if (totalElem) {
+        totalElem.innerText = totalHours > 0 
+            ? `📚 Total: ${totalHours}h ${totalMins}m` 
+            : `📚 Total: ${totalMins}m`;
+    }
+}
+
+// Solución para ocultar/mostrar sin conflictos de Tailwind
+function toggleTimersVisibility() {
+    const container = document.getElementById('timers-container');
+    if (container) {
+        container.classList.toggle('custom-hidden-timer');
+        if (container.style.display === 'none') {
+            container.style.display = '';
+        } else {
+            container.style.display = 'none';
+        }
+    }
+}
+
 function inicializarObjetivosQuiz(preguntas) {
-    // Extraer objetivos únicos de las preguntas y ordenarlos
-    objetivosDisponibles = [...new Set(preguntas.map(p => p.objetivo || p.obj))].sort();
+    objetivosDisponibles = [...new Set(preguntas.map(p => p.Objetivo || p.objetivo || p.obj))].sort();
     
     const container = document.getElementById('objectives-tabs-container');
     if (!container) return;
@@ -235,16 +205,14 @@ function inicializarObjetivosQuiz(preguntas) {
         return;
     }
 
-    // Seleccionar el primero por defecto si no hay uno activo
-    if (!objetivoActual || !objetivosDisponibles.includes(objetivoActual)) {
-        objetivoActual = objetivosDisponibles[0];
+    if (!currentObjective || !objetivosDisponibles.includes(currentObjective)) {
+        currentObjective = objetivosDisponibles[0];
     }
 
-    // Renderizar los botones dinámicamente
     container.innerHTML = objetivosDisponibles.map(obj => `
         <button onclick="switchObjective('${obj}')" id="btn-obj-${obj}" 
-            class="px-4 py-2 rounded-xl font-medium text-sm transition ${
-                obj === objetivoActual 
+            class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 ${
+                obj === currentObjective 
                 ? 'bg-blue-900 text-white shadow-sm' 
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }">
@@ -252,27 +220,84 @@ function inicializarObjetivosQuiz(preguntas) {
         </button>
     `).join('');
 
-    // Cargar las preguntas del objetivo actual
-    cargarPreguntasPorObjetivo(objetivoActual);
+    loadQuestionsForCurrentObjective();
 }
 
-function switchObjective(obj) {
-    objetivoActual = obj;
-    // Actualizar clases visuales de los botones
+function switchObjective(objNum) {
+    currentObjective = objNum;
     objetivosDisponibles.forEach(o => {
         const btn = document.getElementById(`btn-obj-${o}`);
         if (btn) {
-            if (o === obj) {
-                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition bg-blue-900 text-white shadow-sm";
+            if (o === objNum) {
+                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-blue-900 text-white shadow-sm";
             } else {
-                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200";
             }
         }
     });
-    cargarPreguntasPorObjetivo(objetivoActual);
+    loadQuestionsForCurrentObjective();
 }
 
+function loadQuestionsForCurrentObjective() {
+    const currentObjNormalized = String(currentObjective).replace(',', '.').trim();
 
+    const filtered = allQuestions.filter(q => {
+        if (!q.Objetivo) return false;
+        const objStr = String(q.Objetivo).replace(',', '.').trim().replace(/^obj\.?\s*/i, '');
+        return objStr === currentObjNormalized;
+    });
+
+    const titleEl = document.getElementById('obj-title');
+    if (titleEl) titleEl.innerText = `OBJETIVO ${currentObjective}`;
+    
+    const container = document.getElementById('options-container');
+    if (container) container.innerHTML = "";
+    
+    const resultContainer = document.getElementById('result-container');
+    if (resultContainer) resultContainer.classList.add('hidden');
+
+    const questionTextEl = document.getElementById('question-text');
+
+    if (filtered.length === 0) {
+        if (questionTextEl) questionTextEl.innerText = "No hay preguntas disponibles para este objetivo actualmente.";
+        const submitBtn = document.getElementById('submit-btn');
+        if (submitBtn) submitBtn.style.display = 'none';
+        return;
+    }
+
+    const qData = filtered[Math.floor(Math.random() * filtered.length)];
+    if (questionTextEl) questionTextEl.innerText = qData.Pregunta;
+
+    const submitBtn = document.getElementById('submit-btn');
+    if (submitBtn) {
+        submitBtn.style.display = 'block';
+        submitBtn.disabled = true;
+        submitBtn.className = "w-full bg-slate-200 text-slate-400 font-medium py-3 rounded-xl transition cursor-not-allowed";
+    }
+
+    let optionsArray = [
+        { text: qData.Opcion1_Correcta, correct: true },
+        { text: qData.Opcion2_Incorrecta1, correct: false },
+        { text: qData.Opcion3_Incorrecta2, correct: false }
+    ].filter(opt => opt.text && String(opt.text).trim() !== "");
+
+    for (let i = optionsArray.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [optionsArray[i], optionsArray[j]] = [optionsArray[j], optionsArray[i]];
+    }
+
+    if (container) {
+        optionsArray.forEach((opt) => {
+            const btn = document.createElement('button');
+            btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 transition option-btn my-2";
+            btn.innerText = opt.text;
+            btn.onclick = () => selectOption(btn, opt.correct);
+            container.appendChild(btn);
+        });
+    }
+
+    selectedAnswerCorrect = null;
+}
 
 function selectOption(selectedBtn, isCorrect) {
     selectedAnswerCorrect = isCorrect;
@@ -295,13 +320,13 @@ function selectOption(selectedBtn, isCorrect) {
 function submitQuiz() {
     if (selectedAnswerCorrect === null) return;
 
-   const payload = {
-    email: currentUser ? currentUser.email : "offline@estudiante.una",
-    name: currentUser ? currentUser.name : "Estudiante",
-    objective: currentObjective,
-    isCorrect: selectedAnswerCorrect,
-    materia: materiaActiva
-};
+    const payload = {
+        email: currentUser ? currentUser.email : "offline@estudiante.una",
+        name: currentUser ? currentUser.name : "Estudiante",
+        objective: currentObjective,
+        isCorrect: selectedAnswerCorrect,
+        materia: materiaActiva
+    };
 
     const btn = document.getElementById('submit-btn');
     if (btn) {
@@ -318,7 +343,7 @@ function submitQuiz() {
     })
     .then(res => res.json())
     .catch(err => {
-        console.warn("Respuesta guardada solo en modo local (sin conexión con Sheets).", err);
+        console.warn("Respuesta guardada solo en modo local.", err);
     })
     .finally(() => {
         showFeedbackResult(isCorrect);
@@ -360,7 +385,7 @@ function showFeedbackResult(isCorrect) {
 }
 
 function logoutUser() {
-    if(timerInterval) clearInterval(timerInterval);
+    if(sessionTimerInterval) clearInterval(sessionTimerInterval);
     localStorage.removeItem('mateuna_user');
     location.reload();
 }
@@ -368,6 +393,7 @@ function logoutUser() {
 function showSection(sectionKey) {
     const quizView = document.getElementById('view-quiz');
     const dynamicView = document.getElementById('view-dynamic');
+    const estadisticasView = document.getElementById('view-estadisticas');
     
     if (window.innerWidth < 768) {
         document.getElementById('sidebar-menu')?.classList.add('hidden');
@@ -384,14 +410,21 @@ function showSection(sectionKey) {
         activeBtn.classList.add('bg-blue-50', 'text-blue-900');
     }     
 
+    // Ocultar todas las vistas principales primero
+    if (quizView) quizView.classList.add('hidden');
+    if (dynamicView) dynamicView.classList.add('hidden');
+    if (estadisticasView) estadisticasView.classList.add('hidden');
+
     if (sectionKey === 'quiz') {
-        quizView.classList.remove('hidden');
-        dynamicView.classList.add('hidden');
+        quizView?.classList.remove('hidden');
+        return;
+    } else if (sectionKey === 'estadisticas') {
+        estadisticasView?.classList.remove('hidden');
+        cargarEstadisticasUsuario();
         return;
     }
 
-    quizView.classList.add('hidden');
-    dynamicView.classList.remove('hidden');
+    dynamicView?.classList.remove('hidden');
 
     if (siteContent[sectionKey]) {
         dynamicView.innerHTML = `
@@ -400,8 +433,6 @@ function showSection(sectionKey) {
         `;
     } else if (sectionKey === 'links') {
         loadSheetDataAsTable('Links', dynamicView, 'Links Importantes de la Universidad');
-    } else if (sectionKey === 'estadisticas') {
-        loadStudentStats(dynamicView);
     } else if (sectionKey === 'notas') {
         loadStudentGradesSheet(dynamicView);
     } else if (sectionKey === 'contacto') {
@@ -413,13 +444,12 @@ function showSection(sectionKey) {
     } else if (sectionKey === 'plan') {
         loadPlanCursoDynamic(dynamicView); 
     } else if (sectionKey === 'fundamentacion') {
-    loadFundamentacionDynamic(dynamicView);
-    }  else if (sectionKey === 'viejos') {
+        loadFundamentacionDynamic(dynamicView);
+    } else if (sectionKey === 'viejos') {
         loadSheetDataAsTable('Viejos', dynamicView, 'Archivo de Exámenes Anteriores');
     }
 }
 
-// Función para cargar e inyectar el Plan de Curso dinámico desde Google Sheets
 async function loadPlanCursoDynamic(container) {
     container.innerHTML = `
         <h2 class="text-xl font-bold text-blue-900 mb-4">Plan de Curso y Ruta de Estudio</h2>
@@ -451,7 +481,6 @@ async function loadPlanCursoDynamic(container) {
             `;
 
             item.temas.forEach(temaObj => {
-                // Si la celda de link no está vacía, genera la etiqueta <a> estilizada
                 if (temaObj.link) {
                     html += `
                         <li>
@@ -519,26 +548,6 @@ async function loadSheetDataAsTable(sheetName, container, title) {
     }
 }
 
-async function loadStudentStats(container, successRate = 0, totalAttempts = 0) {
-    const userEmail = document.getElementById('user-name')?.dataset.email || (currentUser ? currentUser.email : '');
-    
-    container.innerHTML = `
-        <h2 class="text-xl font-bold text-blue-900 mb-4">Estadísticas de Práctica</h2>
-        <p class="text-slate-400 text-sm mb-4">Estudiante: ${userEmail || 'No autenticado'}</p>
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="bg-emerald-50 p-4 rounded-2xl border border-emerald-100 text-center">
-                <span class="block text-2xl font-bold text-emerald-800">${successRate}%</span>
-                <span class="text-xs text-emerald-600 font-medium uppercase">% de Aciertos en Quizzes</span>
-            </div>
-            <div class="bg-slate-50 p-4 rounded-2xl border border-slate-200 text-center">
-                <span class="block text-2xl font-bold text-slate-700">${totalAttempts}</span>
-                <span class="text-xs text-slate-500 font-medium uppercase">Quizzes Respondidos</span>
-            </div>
-        </div>
-        <p class="text-slate-500 text-sm mt-4">Estas métricas reflejan la efectividad en tus cuestionarios de práctica para la asignatura.</p>
-    `;
-}
-
 async function loadStudentGradesSheet(container) {
     const userEmail = (document.getElementById('user-name')?.dataset.email || (currentUser ? currentUser.email : '')).trim().toLowerCase();
     
@@ -585,7 +594,7 @@ async function loadStudentGradesSheet(container) {
             return;
         }
 
-        const objectivesKeys = ["Obj1.1", "Obj1.2", "Obj1.3", "Obj2.1", "Obj2.2", "Obj2.3", "Obj3.1", "Obj3.2", "Obj3.3"];
+        const objectivesKeys = Object.keys(studentRow).filter(k => k.toLowerCase().includes('obj') || k.startsWith('Obj'));
 
         let html = `
             <h2 class="text-xl font-bold text-blue-900 mb-2">Mis Notas Oficiales</h2>
@@ -651,6 +660,7 @@ window.addEventListener('DOMContentLoaded', () => {
         fetchQuestions();
     } else {
         initializeGoogleButton();
+        // Cargar en modo visitante offline por defecto para pruebas rápidas si se desea
     }
 });
 
@@ -681,9 +691,6 @@ function toggleMobileMenu() {
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
-            .then((reg) => {
-                console.log('Service Worker registrado con éxito:', reg.scope);
-            })
             .catch((err) => {
                 console.error('Error al registrar Service Worker:', err);
             });
@@ -707,10 +714,8 @@ function cambiarMateria(codigo) {
     materiaActiva = codigo;
     localStorage.setItem('mateuna_materia_activa', codigo);
     
-    // Recargar preguntas y vista activa para la nueva materia
     fetchQuestions();
     
-    // Si la vista actual no es el quiz, refresca la sección
     const dynamicView = document.getElementById('view-dynamic');
     if (dynamicView && !dynamicView.classList.contains('hidden')) {
         const activeNavBtn = document.querySelector('aside button.bg-blue-50');
@@ -740,7 +745,6 @@ async function loadFundamentacionDynamic(container) {
             return;
         }
 
-        // Construcción de la lista de Libros Principales
         let librosPrincipalesHtml = '';
         if (Array.isArray(data.libros_principales) && data.libros_principales.length > 0) {
             librosPrincipalesHtml = `<ol class="list-decimal list-inside mt-2 space-y-1">`;
@@ -754,7 +758,6 @@ async function loadFundamentacionDynamic(container) {
             librosPrincipalesHtml += `</ol>`;
         }
 
-        // Construcción de la lista de Libros por Carrera / Código
         let librosCarrerasHtml = '';
         if (Array.isArray(data.libros_carreras) && data.libros_carreras.length > 0) {
             librosCarrerasHtml = `
@@ -771,17 +774,13 @@ async function loadFundamentacionDynamic(container) {
             librosCarrerasHtml += `</ol>`;
         }
 
-        // Inyección dinámica respetando la estructura visual
         container.innerHTML = `
             <h2 class="text-xl font-bold text-blue-900 mb-4">Fundamentación del Curso (${materia.nombre})</h2>
-            
             <p class="mb-4 text-slate-600">${data.texto_fundamentacion || ''}</p>
-            
             <h3 class="font-bold text-blue-900 mt-4 mb-2">Objetivo Global de la Asignatura</h3>
             <p class="text-slate-600 bg-blue-50 p-4 rounded-xl border border-blue-100 mb-4">
                 ${data.objetivo_global || ''}
             </p>
-            
             <h3 class="font-bold text-blue-900 mt-4 mb-2">Material Instruccional Obligatorio</h3>
             ${librosPrincipalesHtml}
             ${librosCarrerasHtml}
@@ -796,31 +795,29 @@ async function loadFundamentacionDynamic(container) {
     }
 }
 
-function mostrarSeccionEstadisticas() {
-    showSection('estadisticas'); // Oculta las demás vistas y muestra #view-estadisticas
-    cargarEstadisticasUsuario();
-}
-
 function cargarEstadisticasUsuario() {
     const materiaActual = getMateriaActual();
-    const emailUsuario = localStorage.getItem('mateuna_user_email') || ''; // O la variable donde guardes el usuario logueado
+    const emailUsuario = (document.getElementById('user-name')?.dataset.email || localStorage.getItem('mateuna_user_email') || '').trim().toLowerCase();
+
+    const container = document.getElementById('estadisticas-container');
+    container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">Cargando métricas de rendimiento...</p>`;
 
     fetch(`${materiaActual.scriptUrl}?action=getEstadisticas&materia=${materiaActual.codigo}`)
         .then(res => res.json())
         .then(data => {
-            const container = document.getElementById('estadisticas-container');
-            
-            // Si el backend devuelve un arreglo con los datos de los usuarios
             if (!Array.isArray(data) || data.length === 0) {
-                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">No hay registros de intentos guardados todavía.</div>`;
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">No hay registros de intentos guardados todavía en la base de datos.</div>`;
                 return;
             }
 
-            // Filtrar para el usuario actual o mostrar todos si es profesor
-            const usuarioData = data.find(u => u.email === emailUsuario) || data[0]; 
+            // Buscar por correo exacto o tomar el primero si está en modo offline/visitante
+            let usuarioData = data.find(u => String(u.email).trim().toLowerCase() === emailUsuario);
+            if (!usuarioData && emailUsuario.includes('offline')) {
+                usuarioData = data[0]; // Muestra el primero como ejemplo si es offline
+            }
 
             if (!usuarioData || !usuarioData.detallesObjetivos) {
-                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">Aún no tienes registros de práctica guardados.</div>`;
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">Aún no tienes registros de práctica guardados para este usuario (${emailUsuario}).</div>`;
                 return;
             }
 
@@ -860,48 +857,6 @@ function cargarEstadisticasUsuario() {
         })
         .catch(err => {
             console.error("Error cargando estadísticas:", err);
-            document.getElementById('estadisticas-container').innerHTML = `<div class="p-4 text-center text-rose-500 text-sm">Error al conectar con el servidor de estadísticas.</div>`;
+            container.innerHTML = `<div class="p-4 text-center text-rose-500 text-sm">Error al conectar con el servidor de estadísticas.</div>`;
         });
-}
-
-function startSessionTimer() {
-    sessionSeconds = 0;
-    
-    // Intervalo de cada segundo
-    sessionTimerInterval = setInterval(() => {
-        sessionSeconds++;
-        totalStudySeconds++;
-        
-        // Guardar total acumulado en localStorage cada 10 segundos para no saturar
-        if (totalStudySeconds % 10 === 0) {
-            localStorage.setItem('mateuna_total_study_seconds', totalStudySeconds);
-        }
-        
-        updateTimersDisplay();
-    }, 1000);
-}
-
-function updateTimersDisplay() {
-    // 1. Reloj de Sesión Actual
-    const sessMin = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
-    const sessSec = (sessionSeconds % 60).toString().padStart(2, '0');
-    const sessionElem = document.getElementById('session-timer');
-    if (sessionElem) sessionElem.innerText = `⏱️ Sesión: ${sessMin}:${sessSec}`;
-
-    // 2. Reloj Acumulado Total
-    const totalHours = Math.floor(totalStudySeconds / 3600);
-    const totalMins = Math.floor((totalStudySeconds % 3600) / 60);
-    const totalElem = document.getElementById('total-study-timer');
-    if (totalElem) {
-        totalElem.innerText = totalHours > 0 
-            ? `📚 Total: ${totalHours}h ${totalMins}m` 
-            : `📚 Total: ${totalMins}m`;
-    }
-}
-
-function toggleTimersVisibility() {
-    const container = document.getElementById('timers-container');
-    if (container) {
-        container.classList.toggle('hidden');
-    }
 }
