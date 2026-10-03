@@ -902,3 +902,71 @@ async function loadFundamentacionDynamic(container) {
         `;
     }
 }
+
+function mostrarSeccionEstadisticas() {
+    showSection('estadisticas'); // Oculta las demás vistas y muestra #view-estadisticas
+    cargarEstadisticasUsuario();
+}
+
+function cargarEstadisticasUsuario() {
+    const materiaActual = getMateriaActual();
+    const emailUsuario = localStorage.getItem('mateuna_user_email') || ''; // O la variable donde guardes el usuario logueado
+
+    fetch(`${materiaActual.scriptUrl}?action=getEstadisticas&materia=${materiaActual.codigo}`)
+        .then(res => res.json())
+        .then(data => {
+            const container = document.getElementById('estadisticas-container');
+            
+            // Si el backend devuelve un arreglo con los datos de los usuarios
+            if (!Array.isArray(data) || data.length === 0) {
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">No hay registros de intentos guardados todavía.</div>`;
+                return;
+            }
+
+            // Filtrar para el usuario actual o mostrar todos si es profesor
+            const usuarioData = data.find(u => u.email === emailUsuario) || data[0]; 
+
+            if (!usuarioData || !usuarioData.detallesObjetivos) {
+                container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">Aún no tienes registros de práctica guardados.</div>`;
+                return;
+            }
+
+            let html = `
+                <div class="bg-slate-50 p-4 rounded-xl mb-4 flex justify-between items-center">
+                    <div>
+                        <span class="text-xs text-slate-500 block">Estudiante</span>
+                        <span class="font-bold text-slate-800">${usuarioData.nombre || usuarioData.email}</span>
+                    </div>
+                </div>
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            `;
+
+            for (let objId in usuarioData.detallesObjetivos) {
+                let stats = usuarioData.detallesObjetivos[objId];
+                let colorBarra = stats.porcentajeEfectividad >= 70 ? 'bg-emerald-500' : stats.porcentajeEfectividad >= 40 ? 'bg-amber-500' : 'bg-rose-500';
+
+                html += `
+                    <div class="bg-white p-4 rounded-xl border border-slate-100 shadow-xs space-y-2">
+                        <div class="flex justify-between items-center">
+                            <span class="font-bold text-sm text-slate-700">Objetivo ${objId}</span>
+                            <span class="text-xs font-bold px-2 py-0.5 rounded-md bg-slate-100 text-slate-600">${stats.porcentajeEfectividad}% Efectividad</span>
+                        </div>
+                        <div class="w-full bg-slate-100 h-2 rounded-full overflow-hidden">
+                            <div class="${colorBarra} h-full transition-all duration-500" style="width: ${stats.porcentajeEfectividad}%"></div>
+                        </div>
+                        <div class="flex justify-between text-[11px] text-slate-400 pt-1">
+                            <span>Aciertos: ${stats.totalAciertos}</span>
+                            <span>Total Intentos: ${stats.totalIntentos}</span>
+                        </div>
+                    </div>
+                `;
+            }
+
+            html += `</div>`;
+            container.innerHTML = html;
+        })
+        .catch(err => {
+            console.error("Error cargando estadísticas:", err);
+            document.getElementById('estadisticas-container').innerHTML = `<div class="p-4 text-center text-rose-500 text-sm">Error al conectar con el servidor de estadísticas.</div>`;
+        });
+}
