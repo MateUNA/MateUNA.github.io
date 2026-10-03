@@ -4,6 +4,10 @@ let selectedAnswerCorrect = null;
 let currentObjective = "1.1";
 let allQuestions = [];
 
+let sessionSeconds = 0;
+let totalStudySeconds = parseInt(localStorage.getItem('mateuna_total_study_seconds')) || 0;
+let sessionTimerInterval = null;
+
 let sessionStartTime = null;
 let timerInterval = null;
 
@@ -122,8 +126,6 @@ function normalizeQuestionsKeys(data) {
 
 // --- CARGA DE DATOS INSTANTÁNEA (CSV) + SINCRONIZACIÓN EN SEGUNDO PLANO (SHEETS) ---
 
-// --- CARGA DE DATOS INSTANTÁNEA (CSV) + SINCRONIZACIÓN EN SEGUNDO PLANO (SHEETS) ---
-
 async function fetchQuestions() {
     const questionTextEl = document.getElementById('question-text');
     let loadedFromLocal = false;
@@ -219,26 +221,6 @@ function handleCredentialResponse(response) {
     renderAppUI(userData);
     startSessionTimer();    
     fetchQuestions();
-}
-
-// function startSessionTimer() {
-  //  sessionStartTime = Date.now();
-   // timerInterval = setInterval(() => {
-  //      const elapsedSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-  //      const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-  //      const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
- //       const timerElem = document.getElementById('session-timer');
- //       if (timerElem) timerElem.innerText = `⏱️ ${minutes}:${seconds}`;
-  //  }, 1000);
-// }
-
-function updateStudyTimerDisplay(seconds) {
-    const timerElement = document.getElementById('session-timer');
-    if (!timerElement) return;
-    
-    const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
-    const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
-    timerElement.innerText = `⏱️ ${minutes}:${remainingSeconds}`;
 }
 
 function inicializarObjetivosQuiz(preguntas) {
@@ -880,4 +862,46 @@ function cargarEstadisticasUsuario() {
             console.error("Error cargando estadísticas:", err);
             document.getElementById('estadisticas-container').innerHTML = `<div class="p-4 text-center text-rose-500 text-sm">Error al conectar con el servidor de estadísticas.</div>`;
         });
+}
+
+function startSessionTimer() {
+    sessionSeconds = 0;
+    
+    // Intervalo de cada segundo
+    sessionTimerInterval = setInterval(() => {
+        sessionSeconds++;
+        totalStudySeconds++;
+        
+        // Guardar total acumulado en localStorage cada 10 segundos para no saturar
+        if (totalStudySeconds % 10 === 0) {
+            localStorage.setItem('mateuna_total_study_seconds', totalStudySeconds);
+        }
+        
+        updateTimersDisplay();
+    }, 1000);
+}
+
+function updateTimersDisplay() {
+    // 1. Reloj de Sesión Actual
+    const sessMin = Math.floor(sessionSeconds / 60).toString().padStart(2, '0');
+    const sessSec = (sessionSeconds % 60).toString().padStart(2, '0');
+    const sessionElem = document.getElementById('session-timer');
+    if (sessionElem) sessionElem.innerText = `⏱️ Sesión: ${sessMin}:${sessSec}`;
+
+    // 2. Reloj Acumulado Total
+    const totalHours = Math.floor(totalStudySeconds / 3600);
+    const totalMins = Math.floor((totalStudySeconds % 3600) / 60);
+    const totalElem = document.getElementById('total-study-timer');
+    if (totalElem) {
+        totalElem.innerText = totalHours > 0 
+            ? `📚 Total: ${totalHours}h ${totalMins}m` 
+            : `📚 Total: ${totalMins}m`;
+    }
+}
+
+function toggleTimersVisibility() {
+    const container = document.getElementById('timers-container');
+    if (container) {
+        container.classList.toggle('hidden');
+    }
 }
