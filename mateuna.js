@@ -1,4 +1,4 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzeVbtuoroR5M99FoIpPHmbNqRKuomE11FBrnUrNQon6xJ6z1S28DlXNaewUFnH6MVE/exec";
+const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzxz5bmHZK2ukteSfVh4fMNT-He7UgpbxLJWKXTv1_OJoqM6lLb1acBVNDG-F6M8GK_/exec";
 let currentUser = null;
 let selectedAnswerCorrect = null;
 let currentObjective = "1.1";
@@ -122,6 +122,8 @@ function normalizeQuestionsKeys(data) {
 
 // --- CARGA DE DATOS INSTANTÁNEA (CSV) + SINCRONIZACIÓN EN SEGUNDO PLANO (SHEETS) ---
 
+// --- CARGA DE DATOS INSTANTÁNEA (CSV) + SINCRONIZACIÓN EN SEGUNDO PLANO (SHEETS) ---
+
 async function fetchQuestions() {
     const questionTextEl = document.getElementById('question-text');
     let loadedFromLocal = false;
@@ -134,8 +136,7 @@ async function fetchQuestions() {
             
             if (localData.length > 0) {
                 allQuestions = normalizeQuestionsKeys(localData);
-                populateObjectiveButtons();
-                loadQuestionsForCurrentObjective();
+                inicializarObjetivosQuiz(allQuestions); // <-- LLAMADA DINÁMICA
                 loadedFromLocal = true;
             }
         }
@@ -156,8 +157,7 @@ async function fetchQuestions() {
             
             if (!loadedFromLocal || JSON.stringify(allQuestions) !== JSON.stringify(normalizedRemote)) {
                 allQuestions = normalizedRemote;
-                populateObjectiveButtons();
-                loadQuestionsForCurrentObjective();
+                inicializarObjetivosQuiz(allQuestions); // <-- LLAMADA DINÁMICA
             }
         }
     } catch (err) {
@@ -290,96 +290,7 @@ function switchObjective(obj) {
     cargarPreguntasPorObjetivo(objetivoActual);
 }
 
-function populateObjectiveButtons() {
-    const objectives = ["1.1", "1.2", "1.3", "2.1", "2.2", "2.3", "3.1", "3.2", "3.3"];
-    const selectorContainer = document.querySelector('#view-quiz .flex.gap-2');
-    if (!selectorContainer) return;
 
-    selectorContainer.innerHTML = '';
-    objectives.forEach(obj => {
-        const btn = document.createElement('button');
-        btn.id = `btn-obj-${obj}`;
-        btn.innerText = `Obj. ${obj}`;
-        btn.className = (obj === currentObjective) 
-            ? "px-4 py-2 bg-blue-900 text-white rounded-xl font-medium text-sm transition shrink-0"
-            : "px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition shrink-0";
-        btn.onclick = () => switchObjective(obj);
-        selectorContainer.appendChild(btn);
-    });
-}
-
-function switchObjective(objNum) {
-    currentObjective = objNum;
-    document.querySelectorAll('[id^="btn-obj-"]').forEach(btn => {
-        if(btn.id === `btn-obj-${objNum}`) {
-            btn.className = "px-4 py-2 bg-blue-900 text-white rounded-xl font-medium text-sm transition shrink-0";
-        } else {
-            btn.className = "px-4 py-2 bg-slate-100 text-slate-700 rounded-xl font-medium text-sm transition shrink-0";
-        }
-    });
-    loadQuestionsForCurrentObjective();
-}
-
-function loadQuestionsForCurrentObjective() {
-    const currentObjNormalized = String(currentObjective).replace(',', '.').trim();
-
-    const filtered = allQuestions.filter(q => {
-        if (!q.Objetivo) return false;
-        const objStr = String(q.Objetivo).replace(',', '.').trim().replace(/^obj\.?\s*/i, '');
-        return objStr === currentObjNormalized;
-    });
-
-    const titleEl = document.getElementById('obj-title');
-    if (titleEl) titleEl.innerText = `OBJETIVO ${currentObjective}`;
-    
-    const container = document.getElementById('options-container');
-    if (container) container.innerHTML = "";
-    
-    const resultContainer = document.getElementById('result-container');
-    if (resultContainer) resultContainer.classList.add('hidden');
-
-    const questionTextEl = document.getElementById('question-text');
-
-    if (filtered.length === 0) {
-        if (questionTextEl) questionTextEl.innerText = "No hay preguntas disponibles para este objetivo actualmente.";
-        const submitBtn = document.getElementById('submit-btn');
-        if (submitBtn) submitBtn.style.display = 'none';
-        return;
-    }
-
-    const qData = filtered[Math.floor(Math.random() * filtered.length)];
-    if (questionTextEl) questionTextEl.innerText = qData.Pregunta;
-
-    const submitBtn = document.getElementById('submit-btn');
-    if (submitBtn) {
-        submitBtn.style.display = 'block';
-        submitBtn.disabled = true;
-        submitBtn.className = "w-full bg-slate-200 text-slate-400 font-medium py-3 rounded-xl transition cursor-not-allowed";
-    }
-
-    let optionsArray = [
-        { text: qData.Opcion1_Correcta, correct: true },
-        { text: qData.Opcion2_Incorrecta1, correct: false },
-        { text: qData.Opcion3_Incorrecta2, correct: false }
-    ].filter(opt => opt.text && String(opt.text).trim() !== "");
-
-    for (let i = optionsArray.length - 1; i > 0; i--) {
-        const j = Math.floor(Math.random() * (i + 1));
-        [optionsArray[i], optionsArray[j]] = [optionsArray[j], optionsArray[i]];
-    }
-
-    if (container) {
-        optionsArray.forEach((opt) => {
-            const btn = document.createElement('button');
-            btn.className = "w-full text-left p-4 rounded-xl border border-slate-200 hover:border-blue-500 transition option-btn my-2";
-            btn.innerText = opt.text;
-            btn.onclick = () => selectOption(btn, opt.correct);
-            container.appendChild(btn);
-        });
-    }
-
-    selectedAnswerCorrect = null;
-}
 
 function selectOption(selectedBtn, isCorrect) {
     selectedAnswerCorrect = isCorrect;
