@@ -1,5 +1,5 @@
 // materias.js - Catálogo de Materias centralizado
-const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycby74QRdNkKjtV_I_auAImfvpi2BJMrzUbN6RdwuIDpPnDzua9WaXCd-xVisA45Z5252/exec";
+const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycbxJZM8tAq-OUgoz-tGq28t7o1G7y40eZwd_zbpbzZoVhPfpjdeENyDRpTXmOz1BU6h7/exec";
 
 const MATERIAS_CONFIG = {
   "175": {
@@ -15,13 +15,27 @@ const MATERIAS_CONFIG = {
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./pregunta/p_mate2_178.csv",
     csvEjercicios: "./ejercicios/p_mate2_178.csv"
-  },    
+  }, 
+   "756": {
+    codigo: "756",
+    nombre: "Calculo Integral",
+    scriptUrl: WEB_APP_URL_CENTRAL,
+    csvPreguntas: "./pregunta/p_calc_int_178.csv",
+    csvEjercicios: "./ejercicios/p_calc_int_178.csv"
+  },  
   "768": {
     codigo: "768",
     nombre: "Topologia",
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./preguntas/p_topologia_768.csv",
     csvEjercicios: "./ejercicios/p_topologia_768.csv"
+  }
+   "773": {
+    codigo: "773",
+    nombre: "Modelos Matematicos",
+    scriptUrl: WEB_APP_URL_CENTRAL,
+    csvPreguntas: "./preguntas/p_mod_matem_768.csv",
+    csvEjercicios: "./ejercicios/p_mod_matem_768.csv"
   }
 };
 
