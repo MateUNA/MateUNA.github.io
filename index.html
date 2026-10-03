@@ -55,11 +55,21 @@
             <div class="g_id_signin" data-type="standard"></div>
         </div>
         <div id="user-info" class="hidden flex items-center gap-4">
-            <div class="text-right">
+            <div class="flex items-center gap-3">
+                <!-- Contenedor de Relojes Duales -->
+                <div id="timers-container" class="text-right hidden sm:block">
+                    <span id="session-timer" class="block text-xs text-slate-600 font-mono" title="Tiempo en esta sesión">⏱️ Sesión: 00:00</span>
+                    <span id="total-study-timer" class="block text-[10px] text-slate-400 font-mono" title="Tiempo acumulado de estudio">📚 Total: 00h 00m</span>
+                </div>
+                <!-- Botón para ocultar/mostrar relojes -->
+                <button onclick="toggleTimersVisibility()" class="text-xs text-slate-400 hover:text-slate-600 p-1 rounded-lg bg-slate-100" title="Ocultar / Mostrar relojes">
+                    👁️‍🗨️
+                </button>
+            </div>
+            <div class="text-right border-l pl-3 border-slate-200">
                 <span id="user-name" class="block font-medium text-sm"></span>
-                <span id="session-timer" class="text-xs text-slate-400 font-mono">⏱️ 00:00</span>
-                <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-3 py-1.5 rounded-lg">Salir</button>
-            </div>            
+                <button onclick="logoutUser()" class="text-xs text-red-600 hover:underline bg-slate-100 px-2 py-1 rounded-lg mt-0.5">Salir</button>
+            </div>
         </div>
     </header>
 
