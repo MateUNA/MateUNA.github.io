@@ -7,6 +7,9 @@ let allQuestions = [];
 let sessionStartTime = null;
 let timerInterval = null;
 
+let objetivosDisponibles = [];
+let objetivoActual = null;
+
 let studySeconds = parseInt(localStorage.getItem('mateuna_study_seconds')) || 0;
 let currentWeekKey = getWeekKey(new Date());
 
@@ -218,16 +221,16 @@ function handleCredentialResponse(response) {
     fetchQuestions();
 }
 
-function startSessionTimer() {
-    sessionStartTime = Date.now();
-    timerInterval = setInterval(() => {
-        const elapsedSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
-        const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
-        const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
-        const timerElem = document.getElementById('session-timer');
-        if (timerElem) timerElem.innerText = `⏱️ ${minutes}:${seconds}`;
-    }, 1000);
-}
+// function startSessionTimer() {
+  //  sessionStartTime = Date.now();
+   // timerInterval = setInterval(() => {
+  //      const elapsedSeconds = Math.floor((Date.now() - sessionStartTime) / 1000);
+  //      const minutes = Math.floor(elapsedSeconds / 60).toString().padStart(2, '0');
+  //      const seconds = (elapsedSeconds % 60).toString().padStart(2, '0');
+ //       const timerElem = document.getElementById('session-timer');
+ //       if (timerElem) timerElem.innerText = `⏱️ ${minutes}:${seconds}`;
+  //  }, 1000);
+// }
 
 function updateStudyTimerDisplay(seconds) {
     const timerElement = document.getElementById('session-timer');
@@ -236,6 +239,55 @@ function updateStudyTimerDisplay(seconds) {
     const minutes = Math.floor(seconds / 60).toString().padStart(2, '0');
     const remainingSeconds = (seconds % 60).toString().padStart(2, '0');
     timerElement.innerText = `⏱️ ${minutes}:${remainingSeconds}`;
+}
+
+function inicializarObjetivosQuiz(preguntas) {
+    // Extraer objetivos únicos de las preguntas y ordenarlos
+    objetivosDisponibles = [...new Set(preguntas.map(p => p.objetivo || p.obj))].sort();
+    
+    const container = document.getElementById('objectives-tabs-container');
+    if (!container) return;
+
+    if (objetivosDisponibles.length === 0) {
+        container.innerHTML = '<span class="text-xs text-slate-400 p-2">No hay objetivos disponibles</span>';
+        return;
+    }
+
+    // Seleccionar el primero por defecto si no hay uno activo
+    if (!objetivoActual || !objetivosDisponibles.includes(objetivoActual)) {
+        objetivoActual = objetivosDisponibles[0];
+    }
+
+    // Renderizar los botones dinámicamente
+    container.innerHTML = objetivosDisponibles.map(obj => `
+        <button onclick="switchObjective('${obj}')" id="btn-obj-${obj}" 
+            class="px-4 py-2 rounded-xl font-medium text-sm transition ${
+                obj === objetivoActual 
+                ? 'bg-blue-900 text-white shadow-sm' 
+                : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
+            }">
+            Obj. ${obj}
+        </button>
+    `).join('');
+
+    // Cargar las preguntas del objetivo actual
+    cargarPreguntasPorObjetivo(objetivoActual);
+}
+
+function switchObjective(obj) {
+    objetivoActual = obj;
+    // Actualizar clases visuales de los botones
+    objetivosDisponibles.forEach(o => {
+        const btn = document.getElementById(`btn-obj-${o}`);
+        if (btn) {
+            if (o === obj) {
+                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition bg-blue-900 text-white shadow-sm";
+            } else {
+                btn.className = "px-4 py-2 rounded-xl font-medium text-sm transition bg-slate-100 text-slate-700 hover:bg-slate-200";
+            }
+        }
+    });
+    cargarPreguntasPorObjetivo(objetivoActual);
 }
 
 function populateObjectiveButtons() {
