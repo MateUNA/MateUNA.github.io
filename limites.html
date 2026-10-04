@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Visualizador de Límites - MateUNA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1e3a8a">
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-indigo-950 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">📊</span>
+            <h1 class="font-bold text-base md:text-lg">Laboratorio Visual de Límites</h1>
+        </div>
+        <a href="estudio.html" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 px-3 py-1.5 rounded-lg font-medium transition">
+            ← Volver al Aula
+        </a>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-4xl mx-auto p-4 md:p-6 w-full flex-grow space-y-6">
+        
+        <!-- INTRODUCCIÓN DIDÁCTICA -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
+            <h2 class="text-lg font-bold text-indigo-950 mb-2">Objetivo 3.2: Aproximación al Límite</h2>
+            <p class="text-sm text-slate-600 leading-relaxed">
+                Analicemos la función <strong class="text-indigo-900">$f(x) = \frac{x^2 - 4}{x - 2}$</strong>. 
+                Si intentamos evaluar directamente en $x = 2$, obtenemos una indeterminación del tipo $\frac{0}{0}$. 
+                Usa el control deslizante para acercarte a $2$ por la izquierda y por la derecha, y observa cómo se comporta el valor de $y$.
+            </p>
+        </section>
+
+        <!-- PANEL DE CONTROL Y VISUALIZADOR -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- CONTROLES Y GRÁFICA -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
+                <div>
+                    <label for="slider-x" class="block text-sm font-bold text-slate-700 mb-1">
+                        Valor de aproximaición ($x$): <span id="val-x" class="text-indigo-600 font-mono text-base">2.00</span>
+                    </label>
+                    <input id="slider-x" type="range" min="1.0" max="3.0" step="0.01" value="2.5" 
+                           oninput="actualizarSimulacion(this.value)"
+                           class="w-full accent-indigo-600 cursor-pointer">
+                    <div class="flex justify-between text-xs text-slate-400 mt-1">
+                        <span>1.0 (Izquierda)</span>
+                        <span class="text-rose-600 font-bold">Punto Crítico: 2.0</span>
+                        <span>3.0 (Derecha)</span>
+                    </div>
+                </div>
+
+                <!-- LIENZO DE GRÁFICA CANVAS -->
+                <div class="bg-slate-900 rounded-xl p-2 relative flex items-center justify-center overflow-hidden aspect-square max-h-[280px] mx-auto w-full">
+                    <canvas id="canvas-grafica" width="300" height="300" class="w-full h-full object-contain"></canvas>
+                </div>
+
+                <div class="text-center bg-indigo-50 p-3 rounded-xl border border-indigo-100">
+                    <span class="text-xs text-indigo-700 font-medium block">Resultado de la función $f(x)$:</span>
+                    <span id="val-y" class="text-xl font-black text-indigo-950 font-mono">4.00</span>
+                </div>
+            </div>
+
+            <!-- TABLA DE APROXIMACIÓN DINÁMICA -->
+            <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
+                <div>
+                    <h3 class="text-sm font-bold text-slate-700 mb-3">Tabla de Comportamiento Numérico</h3>
+                    <div class="overflow-x-auto">
+                        <table class="w-full text-left text-xs text-slate-600 border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 uppercase">
+                                <tr>
+                                    <th class="p-2 border-b">Aproximación por Izquierda</th>
+                                    <th class="p-2 border-b text-right">$f(x)$</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-izquierda">
+                                <!-- Inyectado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+
+                    <div class="overflow-x-auto mt-4">
+                        <table class="w-full text-left text-xs text-slate-600 border-collapse">
+                            <thead class="bg-slate-100 text-slate-700 uppercase">
+                                <tr>
+                                    <th class="p-2 border-b">Aproximación por Derecha</th>
+                                    <th class="p-2 border-b text-right">$f(x)$</th>
+                                </tr>
+                            </thead>
+                            <tbody id="tabla-derecha">
+                                <!-- Inyectado por JS -->
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 text-center">
+                    💡 Conclusión: Aunque en $x = 2$ la función no está definida, el <strong>límite es 4</strong> porque ambos lados convergen allí.
+                </div>
+            </div>
+
+        </div>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
+        Práctica Docente 2026 • Universidad Nacional Abierta (UNA) • Módulo PWA Modular
+    </footer>
+
+    <!-- LÓGICA DEL GRAFICADOR E INTERACTIVIDAD -->
+    <script>
+        const f = (x) => {
+            if (Math.abs(x - 2) < 0.00001) return null; // Indeterminación en x=2
+            return (x * x - 4) / (x - 2);
+        };
+
+        function actualizarSimulacion(valStr) {
+            const x = parseFloat(valStr);
+            document.getElementById('val-x').innerText = x.toFixed(2);
+            
+            const y = f(x);
+            const yElem = document.getElementById('val-y');
+            
+            if (y === null) {
+                yElem.innerText = "Indeterminado (Indefinido)";
+                yElem.className = "text-sm font-bold text-rose-600 font-mono";
+            } else {
+                yElem.innerText = y.toFixed(4);
+                yElem.className = "text-xl font-black text-indigo-950 font-mono";
+            }
+
+            dibujarPlano(x);
+            poblarTablas();
+        }
+
+        function dibujarPlano(puntoX) {
+            const canvas = document.getElementById('canvas-grafica');
+            const ctx = canvas.getContext('2d');
+            const width = canvas.width;
+            const height = canvas.height;
+
+            ctx.clearRect(0, 0, width, height);
+
+            // Fondo de cuadrícula
+            ctx.strokeStyle = '#1e293b';
+            ctx.lineWidth = 1;
+            for (let i = 0; i < width; i += 30) {
+                ctx.beginPath(); ctx.moveTo(i, 0); ctx.lineTo(i, height); ctx.stroke();
+                ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke();
+            }
+
+            // Ejes cartesianos (Centro en x=150, y=150 mapeando escala)
+            // Escala: x de 0 a 4 (centro 2 en 150), y de 0 a 8 (centro 4 en 150)
+            const mapX = (x) => (x / 4) * width;
+            const mapY = (y) => height - (y / 8) * height;
+
+            ctx.strokeStyle = '#475569';
+            ctx.lineWidth = 2;
+            // Eje Y en x=2 (mitad del canvas)
+            ctx.beginPath(); ctx.moveTo(mapX(2), 0); ctx.lineTo(mapX(2), height); ctx.stroke();
+            // Eje X en y=4 (mitad del canvas)
+            ctx.beginPath(); ctx.moveTo(0, mapY(4)); ctx.lineTo(width, mapY(4)); ctx.stroke();
+
+            // Dibujar Curva f(x) = x + 2
+            ctx.strokeStyle = '#38bdf8';
+            ctx.lineWidth = 3;
+            ctx.beginPath();
+            let first = true;
+            for (let px = 0; px <= width; px += 2) {
+                let xVal = (px / width) * 4;
+                let yVal = f(xVal);
+                if (yVal !== null) {
+                    let py = mapY(yVal);
+                    if (first) { ctx.moveTo(px, py); first = false; }
+                    else { ctx.lineTo(px, py); }
+                }
+            }
+            ctx.stroke();
+
+            // Hueco en x = 2, y = 4
+            ctx.fillStyle = '#1e293b';
+            ctx.beginPath();
+            ctx.arc(mapX(2), mapY(4), 5, 0, Math.PI * 2);
+            ctx.fill();
+            ctx.strokeStyle = '#f43f5e';
+            ctx.lineWidth = 2;
+            ctx.stroke();
+
+            // Punto móvil del usuario
+            let currentY = f(puntoX);
+            if (currentY !== null) {
+                ctx.fillStyle = '#4ade80';
+                ctx.beginPath();
+                ctx.arc(mapX(puntoX), mapY(currentY), 6, 0, Math.PI * 2);
+                ctx.fill();
+            }
+        }
+
+        function poblarTablas() {
+            const izqBody = document.getElementById('tabla-izquierda');
+            const derBody = document.getElementById('tabla-derecha');
+
+            const valoresIzq = [1.9, 1.99, 1.999];
+            const valoresDer = [2.1, 2.01, 2.001];
+
+            izqBody.innerHTML = valoresIzq.map(x => `
+                <tr class="border-b border-slate-100">
+                    <td class="p-2 font-mono">x = ${x}</td>
+                    <td class="p-2 text-right font-mono text-indigo-700">${f(x).toFixed(4)}</td>
+                </tr>
+            `).join('');
+
+            derBody.innerHTML = valoresDer.map(x => `
+                <tr class="border-b border-slate-100">
+                    <td class="p-2 font-mono">x = ${x}</td>
+                    <td class="p-2 text-right font-mono text-indigo-700">${f(x).toFixed(4)}</td>
+                </tr>
+            `).join('');
+        }
+
+        // Inicializar al cargar
+        window.addEventListener('DOMContentLoaded', () => {
+            actualizarSimulacion(2.5);
+        });
+    </script>
+</body>
+</html>
