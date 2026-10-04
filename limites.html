@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Graficador Universal de Límites - MateUNA</title>
+    <title>Graficador Universal con Indeterminaciones - MateUNA</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Math.js para interpretar funciones escritas por el usuario -->
@@ -15,7 +15,7 @@
     <header class="bg-indigo-950 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
         <div class="flex items-center gap-2">
             <span class="text-xl">📈</span>
-            <h1 class="font-bold text-base md:text-lg">Laboratorio Gráfico Universal</h1>
+            <h1 class="font-bold text-base md:text-lg">Laboratorio Gráfico con Indeterminaciones</h1>
         </div>
         <a href="estudio.html" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 px-3 py-1.5 rounded-lg font-medium transition">
             ← Volver al Aula
@@ -31,7 +31,7 @@
             <div class="flex flex-col sm:flex-row gap-3">
                 <input id="input-funcion" type="text" value="(x^2 - 4) / (x - 2)" 
                        class="flex-grow p-3 border border-slate-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                       placeholder="Ej: x^3 - 2*x, sin(x), (x^2-1)/(x-1)">
+                       placeholder="Ej: (x^2-4)/(x-2), (x^3-1)/(x-1)">
                 <button onclick="procesarFuncion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm cursor-pointer">
                     Graficar y Evaluar
                 </button>
@@ -94,7 +94,7 @@
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 text-center">
-                    💡 <strong>Tip didáctico:</strong> Mueve el control deslizante para acercarte al punto crítico y observa si los valores de las tablas convergen a un mismo número.
+                    💡 <strong>Tip didáctico:</strong> El 🔴 <strong>círculo rojo con centro vacío</strong> en la gráfica indica un punto de indeterminación ($\frac{0}{0}$), ¡exactamente el "hueco" donde el límite sí existe pero la función directa no está definida!
                 </div>
             </div>
 
@@ -116,7 +116,6 @@
             const errorMsg = document.getElementById('error-msg');
             
             try {
-                // Compilar la expresión usando math.js
                 const node = math.parse(rawExpr);
                 compiledNode = node.compile();
                 errorMsg.classList.add('hidden');
@@ -139,16 +138,39 @@
             }
         }
 
+        // Función para estimar si hay un "hueco" (discontinuidad evitable) en un punto x0
+        function detectarHueco(x0) {
+            if (!compiledNode) return null;
+            let valDirecto = evaluar(x0);
+            if (valDirecto !== null) return null; // Si da un número, no es un hueco puntual indefinido
+
+            // Evaluamos muy cerca por la izquierda y derecha para ver si los valores tienden a un número finito
+            let yIzq = evaluar(x0 - 0.0001);
+            let yDer = evaluar(x0 + 0.0001);
+
+            if (yIzq !== null && yDer !== null && Math.abs(yIzq - yDer) < 0.05) {
+                return (yIzq + yDer) / 2; // Retorna el valor al que tiende el "hueco"
+            }
+            return null;
+        }
+
         function actualizarSimulacion() {
             const x0 = parseFloat(document.getElementById('slider-x').value);
             document.getElementById('val-x').innerText = x0.toFixed(2);
 
-            const yVal = evaluar(x0);
+            let yVal = evaluar(x0);
             const yElem = document.getElementById('val-y');
 
+            const valorHueco = detectarHueco(x0);
+
             if (yVal === null) {
-                yElem.innerText = "Indeterminado / Indefinido";
-                yElem.className = "text-sm font-bold text-rose-600 font-mono";
+                if (valorHueco !== null) {
+                    yElem.innerText = `Indeterminado (Hueco en y ≈ ${valorHueco.toFixed(2)})`;
+                    yElem.className = "text-xs font-bold text-amber-600 font-mono";
+                } else {
+                    yElem.innerText = "Indefinido / Asíntota";
+                    yElem.className = "text-sm font-bold text-rose-600 font-mono";
+                }
             } else {
                 yElem.innerText = yVal.toFixed(4);
                 yElem.className = "text-xl font-black text-indigo-950 font-mono";
@@ -174,7 +196,6 @@
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke();
             }
 
-            // Ventana de visualización centrada en xCenter (ancho de ventana = 6 unidades)
             const xMin = xCenter - 3;
             const xMax = xCenter + 3;
             const yMin = -5;
@@ -183,7 +204,7 @@
             const mapX = (x) => ((x - xMin) / (xMax - xMin)) * width;
             const mapY = (y) => height - ((y - yMin) / (yMax - yMin)) * height;
 
-            // Ejes X e Y si están en rango
+            // Ejes X e Y
             ctx.strokeStyle = '#475569';
             ctx.lineWidth = 2;
             if (xMin <= 0 && xMax >= 0) {
@@ -198,7 +219,7 @@
             ctx.lineWidth = 3;
             ctx.beginPath();
             let first = true;
-            const pasos = 150;
+            const pasos = 200;
             const dx = (xMax - xMin) / pasos;
 
             for (let i = 0; i <= pasos; i++) {
@@ -210,10 +231,34 @@
                     if (first) { ctx.moveTo(px, py); first = false; }
                     else { ctx.lineTo(px, py); }
                 } else {
-                    first = true; // Cortar trazo si hay asíntotas o discontinuidades
+                    first = true;
                 }
             }
             ctx.stroke();
+
+            // RENDERIZAR EL "HUECO" SI EXISTE EN ESTA VISTA
+            // Escaneamos discretamente el rango visible para ubicar posibles discontinuidades evitable
+            for (let i = 0; i <= pasos; i++) {
+                let xVal = xMin + i * dx;
+                let hVal = detectarHueco(xVal);
+                if (hVal !== null && hVal >= yMin && hVal <= yMax) {
+                    let hx = mapX(xVal);
+                    let hy = mapY(hVal);
+                    
+                    // Círculo exterior (relleno del color del fondo para cortar la línea)
+                    ctx.fillStyle = '#0f172a';
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 5, 0, Math.PI * 2);
+                    ctx.fill();
+
+                    // Anillo rojo del hueco
+                    ctx.strokeStyle = '#f43f5e';
+                    ctx.lineWidth = 2;
+                    ctx.beginPath();
+                    ctx.arc(hx, hy, 4.5, 0, Math.PI * 2);
+                    ctx.stroke();
+                }
+            }
 
             // Punto actual seleccionado en el slider
             let currentY = evaluar(xCenter);
@@ -257,7 +302,6 @@
             }).join('');
         }
 
-        // Inicializar al cargar la página
         window.addEventListener('DOMContentLoaded', () => {
             procesarFuncion();
         });
