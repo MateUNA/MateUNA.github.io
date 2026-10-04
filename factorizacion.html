@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Entrenador de Factorización - MateUNA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-indigo-950 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">⚡</span>
+            <h1 class="font-bold text-base md:text-lg">Dojo de Factorización</h1>
+        </div>
+        <a href="estudio.html" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 px-3 py-1.5 rounded-lg font-medium transition">
+            ← Volver al Aula
+        </a>
+    </header>
+
+    <!-- CONTENIDO PRINCIPAL -->
+    <main class="max-w-3xl mx-auto p-4 md:p-6 w-full flex-grow space-y-6">
+        
+        <!-- PANEL DE PUNTUACIÓN Y ESTADÍSTICAS -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center">
+            <div>
+                <span class="text-xs text-slate-400 block uppercase font-bold">Puntaje Total</span>
+                <span id="score-val" class="text-2xl font-black text-indigo-900 font-mono">0</span>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block uppercase font-bold">Racha Actual</span>
+                <span id="streak-val" class="text-2xl font-black text-amber-500 font-mono">🔥 0</span>
+            </div>
+            <div>
+                <button onclick="toggleTeoria()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-2 rounded-xl transition border border-indigo-100">
+                    📖 Ver Consejos / Técnicas
+                </button>
+            </div>
+        </div>
+
+        <!-- SECCIÓN DE TEORÍA Y CONSEJOS (Oculta por defecto) -->
+        <section id="teoria-box" class="bg-indigo-900 text-indigo-100 p-5 rounded-2xl shadow-md hidden space-y-3">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">💡 Técnicas de Factorización para Límites UNA</h3>
+                <button onclick="toggleTeoria()" class="text-indigo-300 hover:text-white text-sm font-bold">✕ Cerrar</button>
+            </div>
+            <p class="text-xs leading-relaxed">
+                Cuando evalúas un límite y da $\frac{0}{0}$, el polinomio superior o inferior esconde una raíz común (el factor que se anula). 
+                Si tienes una ecuación cuadrática <strong class="text-amber-300">$ax^2 + bx + c = 0$</strong>, puedes hallar sus raíces $r_1$ y $r_2$ usando la resolvente:
+            </p>
+            <div class="bg-indigo-950 p-3 rounded-xl font-mono text-center text-xs text-amber-200">
+                $$x = \frac{-b \pm \sqrt{b^2 - 4ac}}{2a}$$
+            </div>
+            <p class="text-xs leading-relaxed">
+                Una vez halladas las raíces, el trinomio se descompone siempre como: 
+                <strong class="text-amber-300">$a(x - r_1)(x - r_2)$</strong>. ¡Este es el factor que vas a simplificar con el denominador!
+            </p>
+        </section>
+
+        <!-- ÁREA DEL JUEGO / RETO -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-6">
+            <div>
+                <span id="badge-nivel" class="inline-block px-3 py-1 bg-amber-50 text-amber-800 font-bold text-xs rounded-full border border-amber-100 mb-2">
+                    Reto de Factorización
+                </span>
+                <h2 class="text-sm text-slate-500 font-medium">Factoriza el siguiente trinomio cuadrático:</h2>
+                <div id="cuadratica-display" class="text-3xl md:text-4xl font-black text-indigo-950 font-mono my-4 tracking-wide">
+                    x² - 5x + 6 = 0
+                </div>
+            </div>
+
+            <!-- ENTRADA DE RESPUESTA (RAÍCES) -->
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 max-w-md mx-auto space-y-3">
+                <p class="text-xs text-slate-600 font-medium">Introduce las dos raíces $(r_1, r_2)$ o los factores:</p>
+                <div class="flex justify-center gap-3">
+                    <input id="input-r1" type="number" step="any" placeholder="Raíz 1 (r₁)" 
+                           class="w-32 p-3 text-center border border-slate-300 rounded-xl font-mono text-base font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+                    <input id="input-r2" type="number" step="any" placeholder="Raíz 2 (r₂)" 
+                           class="w-32 p-3 text-center border border-slate-300 rounded-xl font-mono text-base font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+                </div>
+                <button onclick="verificarRespuesta()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-sm cursor-pointer">
+                    Comprobar Raíces
+                </button>
+            </div>
+
+            <!-- CONTENEDOR DE RETROALIMENTACIÓN -->
+            <div id="feedback-box" class="hidden p-4 rounded-xl text-sm font-medium transition-all"></div>
+
+            <div id="next-btn-container" class="hidden">
+                <button onclick="generarNuevoReto()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-sm cursor-pointer">
+                    Siguiente Reto ➔
+                </button>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- FOOTER -->
+    <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
+        Práctica Docente 2026 • Universidad Nacional Abierta (UNA) • Minijuego Didáctico
+    </footer>
+
+    <!-- LÓGICA DEL JUEGO -->
+    <script>
+        let score = 0;
+        let streak = 0;
+        let raizActual1 = 0;
+        let raizActual2 = 0;
+
+        function toggleTeoria() {
+            const box = document.getElementById('teoria-box');
+            box.classList.toggle('hidden');
+        }
+
+        // Generar una cuadrática a partir de dos raíces aleatorias enteras entre -5 y 5
+        function generarNuevoReto() {
+            document.getElementById('feedback-box').classList.add('hidden');
+            document.getElementById('next-btn-container').classList.add('hidden');
+            document.getElementById('input-r1').value = '';
+            document.getElementById('input-r2').value = '';
+            document.getElementById('input-r1').disabled = false;
+            document.getElementById('input-r2').disabled = false;
+
+            // Escoger raíces enteras para que sea amigable de practicar
+            let r1 = Math.floor(Math.random() * 11) - 5; // de -5 a 5
+            let r2 = Math.floor(Math.random() * 11) - 5;
+
+            // Evitar que sean idénticas para tener dos raíces distintas (o permitir raíces dobles si se prefiere)
+            raizActual1 = Math.min(r1, r2);
+            raizActual2 = Math.max(r1, r2);
+
+            // Construir trinomio: (x - r1)(x - r2) = x^2 - (r1+r2)x + (r1*r2)
+            let b = -(raizActual1 + raizActual2);
+            let c = raizActual1 * raizActual2;
+
+            let bStr = b === 0 ? '' : (b > 0 ? `+ ${b}x` : `- ${Math.abs(b)}x`);
+            let cStr = c === 0 ? '' : (c > 0 ? `+ ${c}` : `- ${Math.abs(c)}`);
+
+            let expresion = `x² ${bStr} ${cStr} = 0`.replace(/\s+/g, ' ');
+            document.getElementById('cuadratica-display').innerText = expresion;
+        }
+
+        function verificarRespuesta() {
+            const r1Input = parseFloat(document.getElementById('input-r1').value);
+            const r2Input = parseFloat(document.getElementById('input-r2').value);
+            const feedbackBox = document.getElementById('feedback-box');
+
+            if (isNaN(r1Input) || isNaN(r2Input)) {
+                alert('Por favor introduce ambas valores numéricos.');
+                return;
+            }
+
+            // Ordenar las respuestas ingresadas por el usuario
+            let usuarioRaices = [r1Input, r2Input].sort((a, b) => a - b);
+            let correctasRaices = [raizActual1, raizActual2].sort((a, b) => a - b);
+
+            feedbackBox.classList.remove('hidden');
+
+            if (usuarioRaices[0] === correctasRaices[0] && usuarioRaices[1] === correctasRaices[1]) {
+                score += 10;
+                streak++;
+                feedbackBox.className = "p-4 rounded-xl bg-emerald-50 border border-emerald-200 text-emerald-800 text-sm font-medium";
+                feedbackBox.innerHTML = `✅ <strong>¡Excelente!</strong> Las raíces son correctas. El trinomio se factoriza como <code class="bg-emerald-100 px-1 py-0.5 rounded font-mono">(x ${raizActual1 >= 0 ? '- ' + raizActual1 : '+ ' + Math.abs(raizActual1)})(x ${raizActual2 >= 0 ? '- ' + raizActual2 : '+ ' + Math.abs(raizActual2)})</code>.`;
+                
+                document.getElementById('input-r1').disabled = true;
+                document.getElementById('input-r2').disabled = true;
+                document.getElementById('next-btn-container').classList.remove('hidden');
+            } else {
+                streak = 0;
+                feedbackBox.className = "p-4 rounded-xl bg-rose-50 border border-rose-200 text-rose-800 text-sm font-medium";
+                feedbackBox.innerHTML = `❌ <strong>Incorrecto.</strong> Las raíces correctas para esta ecuación son <strong>r₁ = ${raizActual1}</strong> y <strong>r₂ = ${raizActual2}</strong>. ¡Inténtalo de nuevo en el siguiente reto!`;
+                document.getElementById('next-btn-container').classList.remove('hidden');
+            }
+
+            document.getElementById('score-val').innerText = score;
+            document.getElementById('streak-val').innerText = `🔥 ${streak}`;
+        }
+
+        window.addEventListener('DOMContentLoaded', () => {
+            generarNuevoReto();
+        });
+    </script>
+</body>
+</html>
