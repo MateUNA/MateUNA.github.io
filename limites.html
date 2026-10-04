@@ -3,19 +3,19 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Visualizador de Límites - MateUNA</title>
+    <title>Graficador Universal de Límites - MateUNA</title>
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <link rel="manifest" href="manifest.json">
-    <meta name="theme-color" content="#1e3a8a">
+    <!-- Math.js para interpretar funciones escritas por el usuario -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js"></script>
 </head>
 <body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between font-sans">
 
     <!-- HEADER -->
     <header class="bg-indigo-950 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
         <div class="flex items-center gap-2">
-            <span class="text-xl">📊</span>
-            <h1 class="font-bold text-base md:text-lg">Laboratorio Visual de Límites</h1>
+            <span class="text-xl">📈</span>
+            <h1 class="font-bold text-base md:text-lg">Laboratorio Gráfico Universal</h1>
         </div>
         <a href="estudio.html" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 px-3 py-1.5 rounded-lg font-medium transition">
             ← Volver al Aula
@@ -25,33 +25,32 @@
     <!-- CONTENIDO PRINCIPAL -->
     <main class="max-w-4xl mx-auto p-4 md:p-6 w-full flex-grow space-y-6">
         
-        <!-- INTRODUCCIÓN DIDÁCTICA -->
-        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200">
-            <h2 class="text-lg font-bold text-indigo-950 mb-2">Objetivo 3.2: Aproximación al Límite</h2>
-            <p class="text-sm text-slate-600 leading-relaxed">
-                Analicemos la función <strong class="text-indigo-900">$f(x) = \frac{x^2 - 4}{x - 2}$</strong>. 
-                Si intentamos evaluar directamente en $x = 2$, obtenemos una indeterminación del tipo $\frac{0}{0}$. 
-                Usa el control deslizante para acercarte a $2$ por la izquierda y por la derecha, y observa cómo se comporta el valor de $y$.
-            </p>
+        <!-- ENTRADA DE LA FUNCIÓN -->
+        <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
+            <h2 class="text-lg font-bold text-indigo-950">Escribe cualquier función f(x):</h2>
+            <div class="flex flex-col sm:flex-row gap-3">
+                <input id="input-funcion" type="text" value="(x^2 - 4) / (x - 2)" 
+                       class="flex-grow p-3 border border-slate-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
+                       placeholder="Ej: x^3 - 2*x, sin(x), (x^2-1)/(x-1)">
+                <button onclick="procesarFuncion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm cursor-pointer">
+                    Graficar y Evaluar
+                </button>
+            </div>
+            <p id="error-msg" class="text-xs text-rose-600 hidden font-medium"></p>
         </section>
 
-        <!-- PANEL DE CONTROL Y VISUALIZADOR -->
+        <!-- PANEL DE VISUALIZACIÓN -->
         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
             
             <!-- CONTROLES Y GRÁFICA -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
                 <div>
                     <label for="slider-x" class="block text-sm font-bold text-slate-700 mb-1">
-                        Valor de aproximaición ($x$): <span id="val-x" class="text-indigo-600 font-mono text-base">2.00</span>
+                        Punto de Tendencia ($x_0$): <span id="val-x" class="text-indigo-600 font-mono text-base">2.00</span>
                     </label>
-                    <input id="slider-x" type="range" min="1.0" max="3.0" step="0.01" value="2.5" 
-                           oninput="actualizarSimulacion(this.value)"
+                    <input id="slider-x" type="range" min="-5" max="5" step="0.01" value="2" 
+                           oninput="actualizarSimulacion()"
                            class="w-full accent-indigo-600 cursor-pointer">
-                    <div class="flex justify-between text-xs text-slate-400 mt-1">
-                        <span>1.0 (Izquierda)</span>
-                        <span class="text-rose-600 font-bold">Punto Crítico: 2.0</span>
-                        <span>3.0 (Derecha)</span>
-                    </div>
                 </div>
 
                 <!-- LIENZO DE GRÁFICA CANVAS -->
@@ -60,7 +59,7 @@
                 </div>
 
                 <div class="text-center bg-indigo-50 p-3 rounded-xl border border-indigo-100">
-                    <span class="text-xs text-indigo-700 font-medium block">Resultado de la función $f(x)$:</span>
+                    <span class="text-xs text-indigo-700 font-medium block">Valor evaluado f(x₀):</span>
                     <span id="val-y" class="text-xl font-black text-indigo-950 font-mono">4.00</span>
                 </div>
             </div>
@@ -68,18 +67,16 @@
             <!-- TABLA DE APROXIMACIÓN DINÁMICA -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-3">Tabla de Comportamiento Numérico</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-3">Comportamiento del Límite al rededor de $x_0$</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs text-slate-600 border-collapse">
                             <thead class="bg-slate-100 text-slate-700 uppercase">
                                 <tr>
-                                    <th class="p-2 border-b">Aproximación por Izquierda</th>
+                                    <th class="p-2 border-b">Por Izquierda ($x \to x_0^-$)</th>
                                     <th class="p-2 border-b text-right">$f(x)$</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-izquierda">
-                                <!-- Inyectado por JS -->
-                            </tbody>
+                            <tbody id="tabla-izquierda"></tbody>
                         </table>
                     </div>
 
@@ -87,19 +84,17 @@
                         <table class="w-full text-left text-xs text-slate-600 border-collapse">
                             <thead class="bg-slate-100 text-slate-700 uppercase">
                                 <tr>
-                                    <th class="p-2 border-b">Aproximación por Derecha</th>
+                                    <th class="p-2 border-b">Por Derecha ($x \to x_0^+$)</th>
                                     <th class="p-2 border-b text-right">$f(x)$</th>
                                 </tr>
                             </thead>
-                            <tbody id="tabla-derecha">
-                                <!-- Inyectado por JS -->
-                            </tbody>
+                            <tbody id="tabla-derecha"></tbody>
                         </table>
                     </div>
                 </div>
 
                 <div class="mt-4 pt-3 border-t border-slate-100 text-[11px] text-slate-500 text-center">
-                    💡 Conclusión: Aunque en $x = 2$ la función no está definida, el <strong>límite es 4</strong> porque ambos lados convergen allí.
+                    💡 <strong>Tip didáctico:</strong> Mueve el control deslizante para acercarte al punto crítico y observa si los valores de las tablas convergen a un mismo número.
                 </div>
             </div>
 
@@ -109,36 +104,61 @@
 
     <!-- FOOTER -->
     <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
-        Práctica Docente 2026 • Universidad Nacional Abierta (UNA) • Módulo PWA Modular
+        Práctica Docente 2026 • Universidad Nacional Abierta (UNA) • Graficador Universal
     </footer>
 
-    <!-- LÓGICA DEL GRAFICADOR E INTERACTIVIDAD -->
+    <!-- LÓGICA DE MATH.JS Y CANVAS -->
     <script>
-        const f = (x) => {
-            if (Math.abs(x - 2) < 0.00001) return null; // Indeterminación en x=2
-            return (x * x - 4) / (x - 2);
-        };
+        let compiledNode = null;
 
-        function actualizarSimulacion(valStr) {
-            const x = parseFloat(valStr);
-            document.getElementById('val-x').innerText = x.toFixed(2);
+        function procesarFuncion() {
+            const rawExpr = document.getElementById('input-funcion').value;
+            const errorMsg = document.getElementById('error-msg');
             
-            const y = f(x);
+            try {
+                // Compilar la expresión usando math.js
+                const node = math.parse(rawExpr);
+                compiledNode = node.compile();
+                errorMsg.classList.add('hidden');
+                actualizarSimulacion();
+            } catch (err) {
+                errorMsg.innerText = "Error en la sintaxis de la función. Revisa los operadores (usa '*' para multiplicar).";
+                errorMsg.classList.remove('hidden');
+                compiledNode = null;
+            }
+        }
+
+        function evaluar(xVal) {
+            if (!compiledNode) return null;
+            try {
+                let res = compiledNode.evaluate({ x: xVal });
+                if (typeof res !== 'number' || isNaN(res) || !isFinite(res)) return null;
+                return res;
+            } catch (e) {
+                return null;
+            }
+        }
+
+        function actualizarSimulacion() {
+            const x0 = parseFloat(document.getElementById('slider-x').value);
+            document.getElementById('val-x').innerText = x0.toFixed(2);
+
+            const yVal = evaluar(x0);
             const yElem = document.getElementById('val-y');
-            
-            if (y === null) {
-                yElem.innerText = "Indeterminado (Indefinido)";
+
+            if (yVal === null) {
+                yElem.innerText = "Indeterminado / Indefinido";
                 yElem.className = "text-sm font-bold text-rose-600 font-mono";
             } else {
-                yElem.innerText = y.toFixed(4);
+                yElem.innerText = yVal.toFixed(4);
                 yElem.className = "text-xl font-black text-indigo-950 font-mono";
             }
 
-            dibujarPlano(x);
-            poblarTablas();
+            dibujarPlano(x0);
+            poblarTablas(x0);
         }
 
-        function dibujarPlano(puntoX) {
+        function dibujarPlano(xCenter) {
             const canvas = document.getElementById('canvas-grafica');
             const ctx = canvas.getContext('2d');
             const width = canvas.width;
@@ -146,7 +166,7 @@
 
             ctx.clearRect(0, 0, width, height);
 
-            // Fondo de cuadrícula
+            // Cuadrícula de fondo
             ctx.strokeStyle = '#1e293b';
             ctx.lineWidth = 1;
             for (let i = 0; i < width; i += 30) {
@@ -154,78 +174,92 @@
                 ctx.beginPath(); ctx.moveTo(0, i); ctx.lineTo(width, i); ctx.stroke();
             }
 
-            // Ejes cartesianos (Centro en x=150, y=150 mapeando escala)
-            // Escala: x de 0 a 4 (centro 2 en 150), y de 0 a 8 (centro 4 en 150)
-            const mapX = (x) => (x / 4) * width;
-            const mapY = (y) => height - (y / 8) * height;
+            // Ventana de visualización centrada en xCenter (ancho de ventana = 6 unidades)
+            const xMin = xCenter - 3;
+            const xMax = xCenter + 3;
+            const yMin = -5;
+            const yMax = 5;
 
+            const mapX = (x) => ((x - xMin) / (xMax - xMin)) * width;
+            const mapY = (y) => height - ((y - yMin) / (yMax - yMin)) * height;
+
+            // Ejes X e Y si están en rango
             ctx.strokeStyle = '#475569';
             ctx.lineWidth = 2;
-            // Eje Y en x=2 (mitad del canvas)
-            ctx.beginPath(); ctx.moveTo(mapX(2), 0); ctx.lineTo(mapX(2), height); ctx.stroke();
-            // Eje X en y=4 (mitad del canvas)
-            ctx.beginPath(); ctx.moveTo(0, mapY(4)); ctx.lineTo(width, mapY(4)); ctx.stroke();
+            if (xMin <= 0 && xMax >= 0) {
+                ctx.beginPath(); ctx.moveTo(mapX(0), 0); ctx.lineTo(mapX(0), height); ctx.stroke();
+            }
+            if (yMin <= 0 && yMax >= 0) {
+                ctx.beginPath(); ctx.moveTo(0, mapY(0)); ctx.lineTo(width, mapY(0)); ctx.stroke();
+            }
 
-            // Dibujar Curva f(x) = x + 2
+            // Trazar la función
             ctx.strokeStyle = '#38bdf8';
             ctx.lineWidth = 3;
             ctx.beginPath();
             let first = true;
-            for (let px = 0; px <= width; px += 2) {
-                let xVal = (px / width) * 4;
-                let yVal = f(xVal);
-                if (yVal !== null) {
+            const pasos = 150;
+            const dx = (xMax - xMin) / pasos;
+
+            for (let i = 0; i <= pasos; i++) {
+                let xVal = xMin + i * dx;
+                let yVal = evaluar(xVal);
+                if (yVal !== null && yVal >= yMin && yVal <= yMax) {
+                    let px = mapX(xVal);
                     let py = mapY(yVal);
                     if (first) { ctx.moveTo(px, py); first = false; }
                     else { ctx.lineTo(px, py); }
+                } else {
+                    first = true; // Cortar trazo si hay asíntotas o discontinuidades
                 }
             }
             ctx.stroke();
 
-            // Hueco en x = 2, y = 4
-            ctx.fillStyle = '#1e293b';
-            ctx.beginPath();
-            ctx.arc(mapX(2), mapY(4), 5, 0, Math.PI * 2);
-            ctx.fill();
-            ctx.strokeStyle = '#f43f5e';
-            ctx.lineWidth = 2;
-            ctx.stroke();
-
-            // Punto móvil del usuario
-            let currentY = f(puntoX);
-            if (currentY !== null) {
+            // Punto actual seleccionado en el slider
+            let currentY = evaluar(xCenter);
+            if (currentY !== null && currentY >= yMin && currentY <= yMax) {
                 ctx.fillStyle = '#4ade80';
                 ctx.beginPath();
-                ctx.arc(mapX(puntoX), mapY(currentY), 6, 0, Math.PI * 2);
+                ctx.arc(mapX(xCenter), mapY(currentY), 6, 0, Math.PI * 2);
                 ctx.fill();
+                ctx.strokeStyle = '#ffffff';
+                ctx.lineWidth = 2;
+                ctx.stroke();
             }
         }
 
-        function poblarTablas() {
+        function poblarTablas(x0) {
             const izqBody = document.getElementById('tabla-izquierda');
             const derBody = document.getElementById('tabla-derecha');
 
-            const valoresIzq = [1.9, 1.99, 1.999];
-            const valoresDer = [2.1, 2.01, 2.001];
+            const deltas = [0.1, 0.01, 0.001];
 
-            izqBody.innerHTML = valoresIzq.map(x => `
-                <tr class="border-b border-slate-100">
-                    <td class="p-2 font-mono">x = ${x}</td>
-                    <td class="p-2 text-right font-mono text-indigo-700">${f(x).toFixed(4)}</td>
-                </tr>
-            `).join('');
+            izqBody.innerHTML = deltas.map(d => {
+                let x = x0 - d;
+                let y = evaluar(x);
+                return `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-2 font-mono">x = ${x.toFixed(4)}</td>
+                        <td class="p-2 text-right font-mono text-indigo-700">${y !== null ? y.toFixed(4) : 'Indefinido'}</td>
+                    </tr>
+                `;
+            }).join('');
 
-            derBody.innerHTML = valoresDer.map(x => `
-                <tr class="border-b border-slate-100">
-                    <td class="p-2 font-mono">x = ${x}</td>
-                    <td class="p-2 text-right font-mono text-indigo-700">${f(x).toFixed(4)}</td>
-                </tr>
-            `).join('');
+            derBody.innerHTML = deltas.map(d => {
+                let x = x0 + d;
+                let y = evaluar(x);
+                return `
+                    <tr class="border-b border-slate-100">
+                        <td class="p-2 font-mono">x = ${x.toFixed(4)}</td>
+                        <td class="p-2 text-right font-mono text-indigo-700">${y !== null ? y.toFixed(4) : 'Indefinido'}</td>
+                    </tr>
+                `;
+            }).join('');
         }
 
-        // Inicializar al cargar
+        // Inicializar al cargar la página
         window.addEventListener('DOMContentLoaded', () => {
-            actualizarSimulacion(2.5);
+            procesarFuncion();
         });
     </script>
 </body>
