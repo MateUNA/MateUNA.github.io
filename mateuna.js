@@ -1,4 +1,16 @@
-const WEB_APP_URL = "https://script.google.com/macros/s/AKfycbzxz5bmHZK2ukteSfVh4fMNT-He7UgpbxLJWKXTv1_OJoqM6lLb1acBVNDG-F6M8GK_/exec";
+// La URL del script sale de materias.js (una sola fuente para toda la app)
+function apiUrl() { return getMateriaActual().scriptUrl; }
+const $id = id => document.getElementById(id);
+let fetchToken = 0;        // evita que una respuesta lenta de la materia anterior pise a la actual
+let seccionActual = 'quiz';
+
+function esc(v) {
+    return String(v ?? '').replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+}
+function safeUrl(u) {
+    u = String(u || '').trim();
+    return /^https?:\/\//i.test(u) ? u : '';
+}
 let currentUser = null;
 let selectedAnswerCorrect = null;
 let currentObjective = "";
@@ -30,20 +42,23 @@ const siteContent = {
 // --- PARSER Y NORMALIZADOR DE DATOS ---
 
 function parseCSV(text) {
-    const lines = text.trim().split(/\r?\n/);
-    if (lines.length < 2) return [];
-    
-    const headers = lines[0].split(',').map(h => h.trim().replace(/^"|"$/g, ''));
-    
-    return lines.slice(1).map(line => {
-        const values = line.match(/(".*?"|[^",]+)(?=\s*,|\s*$)/g) || line.split(',');
-        const obj = {};
-        headers.forEach((header, index) => {
-            let val = values[index] ? values[index].trim().replace(/^"|"$/g, '') : '';
-            obj[header] = val;
-        });
-        return obj;
-    });
+    const rows = []; let row = [], cur = '', q = false;
+    text = text.replace(/^\uFEFF/, '');
+    const cerrarFila = () => { row.push(cur); cur = ''; if (row.some(x => x.trim() !== '')) rows.push(row); row = []; };
+    for (let i = 0; i < text.length; i++) {
+        const c = text[i];
+        if (q) {
+            if (c === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else q = false; }
+            else cur += c;
+        } else if (c === '"') q = true;
+        else if (c === ',') { row.push(cur); cur = ''; }
+        else if (c === '\n' || c === '\r') { if (c === '\r' && text[i + 1] === '\n') i++; cerrarFila(); }
+        else cur += c;
+    }
+    cerrarFila();
+    if (rows.length < 2) return [];
+    const headers = rows[0].map(h => h.trim());
+    return rows.slice(1).map(r => { const o = {}; headers.forEach((h, i) => { o[h] = (r[i] || '').trim(); }); return o; });
 }
 
 function normalizeQuestionsKeys(data) {
@@ -59,15 +74,16 @@ function normalizeQuestionsKeys(data) {
 // --- CARGA DE DATOS INSTANTÁNEA (CSV) + SINCRONIZACIÓN EN SEGUNDO PLANO (SHEETS) ---
 
 async function fetchQuestions() {
-    const questionTextEl = document.getElementById('question-text');
+    const token = ++fetchToken;
+    const materia = getMateriaActual();
+    const questionTextEl = $id('question-text');
     let loadedFromLocal = false;
 
     try {
-        const localResponse = await fetch('./preguntas/p_mate1_175.csv');
+        const localResponse = await fetch(materia.csvPreguntas);
         if (localResponse.ok) {
-            const csvText = await localResponse.text();
-            const localData = parseCSV(csvText);
-            
+            const localData = parseCSV(await localResponse.text());
+            if (token !== fetchToken) return;
             if (localData.length > 0) {
                 allQuestions = normalizeQuestionsKeys(localData);
                 inicializarObjetivosQuiz(allQuestions);
@@ -75,28 +91,32 @@ async function fetchQuestions() {
             }
         }
     } catch (e) {
-        console.warn("No se encontró preguntas.csv local o falló su lectura.", e);
+        console.warn("No se pudo leer el CSV local de " + materia.nombre, e);
     }
+    if (token !== fetchToken) return;
 
     if (!loadedFromLocal && questionTextEl) {
         questionTextEl.innerText = "Conectando con la base de datos remota...";
     }
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=Preguntas&materia=${materiaActiva}`);
+        const response = await fetch(`${apiUrl()}?sheet=Preguntas&materia=${materia.codigo}`);
         const remoteData = await response.json();
-        
+        if (token !== fetchToken) return; // el usuario ya cambió de materia
+
         if (Array.isArray(remoteData) && remoteData.length > 0) {
             const normalizedRemote = normalizeQuestionsKeys(remoteData);
-            
             if (!loadedFromLocal || JSON.stringify(allQuestions) !== JSON.stringify(normalizedRemote)) {
                 allQuestions = normalizedRemote;
                 inicializarObjetivosQuiz(allQuestions);
             }
+        } else if (!loadedFromLocal) {
+            allQuestions = [];
+            inicializarObjetivosQuiz([]);
         }
     } catch (err) {
         console.error("Error al consultar Google Sheets en segundo plano:", err);
-        if (!loadedFromLocal && questionTextEl) {
+        if (token === fetchToken && !loadedFromLocal && questionTextEl) {
             questionTextEl.innerText = "Error de conexión al cargar las preguntas.";
         }
     }
@@ -115,6 +135,7 @@ function decodeJwtResponse(token) {
 
 function renderAppUI(userData) {
     document.getElementById('login-prompt')?.classList.add('hidden');
+    document.getElementById('login-wrapper')?.classList.add('hidden');
     document.getElementById('auth-section')?.classList.add('hidden');
     document.getElementById('user-info')?.classList.remove('hidden');
     document.getElementById('app-container')?.classList.remove('hidden');
@@ -126,6 +147,7 @@ function renderAppUI(userData) {
         // Guardar también el correo separado para las estadísticas
         localStorage.setItem('mateuna_user_email', userData.email);
     }
+    actualizarChipMateria();
     const menuBtn = document.getElementById('mobile-menu-btn');
     if (menuBtn) menuBtn.classList.remove('hidden');
 }
@@ -145,8 +167,7 @@ function handleCredentialResponse(response) {
     localStorage.setItem('mateuna_user', JSON.stringify(userData));
 
     renderAppUI(userData);
-    startSessionTimer();    
-    fetchQuestions();
+    arrancarApp();
 }
 
 function startSessionTimer() {
@@ -183,25 +204,23 @@ function updateTimersDisplay() {
 
 // Solución para ocultar/mostrar sin conflictos de Tailwind
 function toggleTimersVisibility() {
-    const container = document.getElementById('timers-container');
-    if (container) {
-        container.classList.toggle('custom-hidden-timer');
-        if (container.style.display === 'none') {
-            container.style.display = '';
-        } else {
-            container.style.display = 'none';
-        }
-    }
+    const container = $id('timers-container');
+    if (container) container.classList.toggle('sm:block');
 }
 
 function inicializarObjetivosQuiz(preguntas) {
-    objetivosDisponibles = [...new Set(preguntas.map(p => p.Objetivo || p.objetivo || p.obj))].sort();
-    
-    const container = document.getElementById('objectives-tabs-container');
+    objetivosDisponibles = [...new Set(preguntas.map(p => p.Objetivo || p.objetivo || p.obj).filter(Boolean))]
+        .sort((a, b) => String(a).localeCompare(String(b), undefined, { numeric: true }));
+
+    const container = $id('objectives-tabs-container');
     if (!container) return;
 
     if (objetivosDisponibles.length === 0) {
         container.innerHTML = '<span class="text-xs text-slate-400 p-2">No hay objetivos disponibles</span>';
+        const q = $id('question-text'); if (q) q.innerText = 'No hay preguntas cargadas para esta materia todavía.';
+        const o = $id('options-container'); if (o) o.innerHTML = '';
+        const sb = $id('submit-btn'); if (sb) sb.style.display = 'none';
+        const t = $id('obj-title'); if (t) t.innerText = getMateriaActual().nombre.toUpperCase();
         return;
     }
 
@@ -210,10 +229,10 @@ function inicializarObjetivosQuiz(preguntas) {
     }
 
     container.innerHTML = objetivosDisponibles.map(obj => `
-        <button onclick="switchObjective('${obj}')" id="btn-obj-${obj}" 
+        <button onclick="switchObjective('${obj}')" id="btn-obj-${obj}"
             class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 ${
-                obj === currentObjective 
-                ? 'bg-blue-900 text-white shadow-sm' 
+                obj === currentObjective
+                ? 'bg-blue-900 text-white shadow-sm'
                 : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
             }">
             Obj. ${obj}
@@ -336,7 +355,7 @@ function submitQuiz() {
 
     const isCorrect = selectedAnswerCorrect;
 
-    fetch(WEB_APP_URL, {
+    fetch(apiUrl(), {
         method: "POST",
         headers: { "Content-Type": "text/plain" },
         body: JSON.stringify(payload)
@@ -391,38 +410,32 @@ function logoutUser() {
 }
 
 function showSection(sectionKey) {
-    const quizView = document.getElementById('view-quiz');
-    const dynamicView = document.getElementById('view-dynamic');
-    const estadisticasView = document.getElementById('view-estadisticas');
-    
+    const quizView = $id('view-quiz');
+    const dynamicView = $id('view-dynamic');
+    const estadisticasView = $id('view-estadisticas');
+    const materiasView = $id('view-materias');
+
     if (window.innerWidth < 768) {
-        document.getElementById('sidebar-menu')?.classList.add('hidden');
+        $id('sidebar-menu')?.classList.add('hidden');
     }
 
     document.querySelectorAll('aside button').forEach(btn => {
         btn.classList.remove('bg-blue-50', 'text-blue-900');
         btn.classList.add('text-slate-600', 'hover:bg-slate-50');
     });
-    
-    const activeBtn = document.getElementById(`nav-${sectionKey}`);
+    const activeBtn = $id(`nav-${sectionKey}`);
     if (activeBtn) {
         activeBtn.classList.remove('text-slate-600', 'hover:bg-slate-50');
         activeBtn.classList.add('bg-blue-50', 'text-blue-900');
-    }     
-
-    // Ocultar todas las vistas principales primero
-    if (quizView) quizView.classList.add('hidden');
-    if (dynamicView) dynamicView.classList.add('hidden');
-    if (estadisticasView) estadisticasView.classList.add('hidden');
-
-    if (sectionKey === 'quiz') {
-        quizView?.classList.remove('hidden');
-        return;
-    } else if (sectionKey === 'estadisticas') {
-        estadisticasView?.classList.remove('hidden');
-        cargarEstadisticasUsuario();
-        return;
     }
+
+    [quizView, dynamicView, estadisticasView, materiasView].forEach(v => v?.classList.add('hidden'));
+
+    if (sectionKey !== 'materias') seccionActual = sectionKey; // para volver aquí tras cambiar de materia
+
+    if (sectionKey === 'quiz') { quizView?.classList.remove('hidden'); return; }
+    if (sectionKey === 'estadisticas') { estadisticasView?.classList.remove('hidden'); cargarEstadisticasUsuario(); return; }
+    if (sectionKey === 'materias') { materiasView?.classList.remove('hidden'); renderMateriasSection(); return; }
 
     dynamicView?.classList.remove('hidden');
 
@@ -442,7 +455,7 @@ function showSection(sectionKey) {
     } else if (sectionKey === 'clases') {
         loadSheetDataAsTable('Clases', dynamicView, 'Fechas y Horarios de Clases');
     } else if (sectionKey === 'plan') {
-        loadPlanCursoDynamic(dynamicView); 
+        loadPlanCursoDynamic(dynamicView);
     } else if (sectionKey === 'fundamentacion') {
         loadFundamentacionDynamic(dynamicView);
     } else if (sectionKey === 'viejos') {
@@ -457,7 +470,7 @@ async function loadPlanCursoDynamic(container) {
     `;
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?action=getPlanCurso&materia=${materiaActiva}`);
+        const response = await fetch(`${apiUrl()}?action=getPlanCurso&materia=${materiaActiva}`);
         const planData = await response.json();
 
         if (!planData || planData.length === 0) {
@@ -484,7 +497,7 @@ async function loadPlanCursoDynamic(container) {
                 if (temaObj.link) {
                     html += `
                         <li>
-                            <a href="${temaObj.link}" target="_blank" class="text-blue-700 hover:text-blue-900 underline font-medium transition">
+                            <a href="${esc(safeUrl(temaObj.link))}" target="_blank" class="text-blue-700 hover:text-blue-900 underline font-medium transition">
                                 ${temaObj.texto} ↗
                             </a>
                         </li>
@@ -515,7 +528,7 @@ async function loadPlanCursoDynamic(container) {
 async function loadSheetDataAsTable(sheetName, container, title) {
     container.innerHTML = `<h2 class="text-xl font-bold text-blue-900 mb-4">${title}</h2><p class="text-slate-400 text-sm">Cargando datos desde Google Sheets...</p>`;
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=${sheetName}&materia=${materiaActiva}`);
+        const response = await fetch(`${apiUrl()}?sheet=${sheetName}&materia=${materiaActiva}`);
         const data = await response.json();
         
         if (!data || data.length === 0) {
@@ -526,15 +539,17 @@ async function loadSheetDataAsTable(sheetName, container, title) {
         let html = `<h2 class="text-xl font-bold text-blue-900 mb-4">${title}</h2><div class="overflow-x-auto"><table class="w-full text-left text-sm text-slate-600"><thead class="bg-slate-50 text-slate-700 uppercase text-xs"><tr>`;
         
         const headers = Object.keys(data[0]);
-        headers.forEach(h => html += `<th class="p-3">${h}</th>`);
+        headers.forEach(h => html += `<th class="p-3">${esc(h)}</th>`);
         html += `</tr></thead><tbody>`;
 
         data.forEach(row => {
             html += `<tr class="border-b border-slate-100">`;
             headers.forEach(h => {
-                let val = row[h] || '';
-                if(typeof val === 'string' && val.startsWith('http')) {
-                    val = `<a href="${val}" target="_blank" class="text-blue-600 underline">Ver Enlace / PDF</a>`;
+                let val = row[h] ?? '';
+                if (typeof val === 'string' && /^https?:\/\//i.test(val.trim())) {
+                    val = `<a href="${esc(val.trim())}" target="_blank" rel="noopener" class="text-blue-600 underline">Ver Enlace / PDF</a>`;
+                } else {
+                    val = esc(val);
                 }
                 html += `<td class="p-3">${val}</td>`;
             });
@@ -567,8 +582,9 @@ async function loadStudentGradesSheet(container) {
     }
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?sheet=Notas&materia=${materiaActiva}`);
-        const data = await response.json();
+        const response = await fetch(`${apiUrl()}?action=getMisNotas&materia=${materiaActiva}&email=${encodeURIComponent(userEmail)}`);
+        const fila = await response.json();
+        const data = (fila && !fila.error) ? [fila] : [];
 
         if (!data || !Array.isArray(data) || data.length === 0) {
             container.innerHTML = `
@@ -600,7 +616,7 @@ async function loadStudentGradesSheet(container) {
             <h2 class="text-xl font-bold text-blue-900 mb-2">Mis Notas Oficiales</h2>
             <div class="bg-blue-50 border border-blue-100 p-4 rounded-2xl mb-6 flex flex-wrap justify-between items-center gap-2">
                 <div>
-                    <h3 class="font-bold text-blue-900">${studentRow.nombre || studentRow.Nombre || 'Estudiante'}</h3>
+                    <h3 class="font-bold text-blue-900">${esc(studentRow.nombre || studentRow.Nombre || 'Estudiante')}</h3>
                     <p class="text-xs text-blue-700">${userEmail}</p>
                 </div>
                 <div class="text-right">
@@ -656,10 +672,9 @@ window.addEventListener('DOMContentLoaded', () => {
         const userData = JSON.parse(savedUser);
         currentUser = userData;
         renderAppUI(userData);
-        startSessionTimer();
-        fetchQuestions();
+        arrancarApp();
     } else {
-        initializeGoogleButton();
+        // el botón de Google se inicializa con los atributos data-* del HTML
         // Cargar en modo visitante offline por defecto para pruebas rápidas si se desea
     }
 });
@@ -705,25 +720,37 @@ function loginOfflineMode() {
     currentUser = offlineUser;
     localStorage.setItem('mateuna_user', JSON.stringify(offlineUser));
     renderAppUI(offlineUser);
-    startSessionTimer();
-    fetchQuestions();
+    arrancarApp();
 }
 
 function cambiarMateria(codigo) {
-    if (!codigo) return;
+    const nueva = MATERIAS_CONFIG[codigo];
+    if (!nueva) return;
+
+    const yaEstaba = codigo === materiaActiva && localStorage.getItem('mateuna_materia_activa');
+    if (yaEstaba) {
+        mostrarToast(`Ya estás en ${nueva.nombre} (${nueva.codigos})`, 'info');
+        showSection(seccionActual);
+        return;
+    }
+
     materiaActiva = codigo;
     localStorage.setItem('mateuna_materia_activa', codigo);
-    
+
+    // limpiar lo de la materia anterior
+    allQuestions = [];
+    currentObjective = "";
+    objetivosDisponibles = [];
+    const tabs = $id('objectives-tabs-container'); if (tabs) tabs.innerHTML = '';
+    const q = $id('question-text'); if (q) q.innerText = `Cargando preguntas de ${nueva.nombre}...`;
+    const opts = $id('options-container'); if (opts) opts.innerHTML = '';
+    const sb = $id('submit-btn'); if (sb) sb.style.display = 'none';
+    $id('result-container')?.classList.add('hidden');
+
+    actualizarChipMateria();
     fetchQuestions();
-    
-    const dynamicView = document.getElementById('view-dynamic');
-    if (dynamicView && !dynamicView.classList.contains('hidden')) {
-        const activeNavBtn = document.querySelector('aside button.bg-blue-50');
-        if (activeNavBtn) {
-            const sectionKey = activeNavBtn.id.replace('nav-', '');
-            showSection(sectionKey);
-        }
-    }
+    mostrarToast(`✅ Materia cambiada a ${nueva.nombre} (${nueva.codigos})`);
+    showSection(seccionActual); // vuelve a la sección donde estabas, ya con los datos de la nueva materia
 }
 
 async function loadFundamentacionDynamic(container) {
@@ -734,7 +761,7 @@ async function loadFundamentacionDynamic(container) {
     `;
 
     try {
-        const response = await fetch(`${WEB_APP_URL}?action=getFundamentacion&materia=${materiaActiva}`);
+        const response = await fetch(`${apiUrl()}?action=getFundamentacion&materia=${materiaActiva}`);
         const data = await response.json();
 
         if (!data || Object.keys(data).length === 0 || data.error) {
@@ -751,7 +778,7 @@ async function loadFundamentacionDynamic(container) {
             data.libros_principales.forEach(item => {
                 librosPrincipalesHtml += `
                     <li class="font-bold text-blue-900">
-                        <a href="${item.url}" target="_blank" class="underline hover:text-blue-700">${item.titulo} ↗</a>
+                        <a href="${esc(safeUrl(item.url))}" target="_blank" class="underline hover:text-blue-700">${item.titulo} ↗</a>
                     </li>
                 `;
             });
@@ -767,7 +794,7 @@ async function loadFundamentacionDynamic(container) {
             data.libros_carreras.forEach(item => {
                 librosCarrerasHtml += `
                     <li class="font-bold text-blue-900">
-                        <a href="${item.url}" target="_blank" class="underline hover:text-blue-700">Código ${item.codigo} ↗</a>
+                        <a href="${esc(safeUrl(item.url))}" target="_blank" class="underline hover:text-blue-700">Código ${item.codigo} ↗</a>
                     </li>
                 `;
             });
@@ -802,7 +829,7 @@ function cargarEstadisticasUsuario() {
     const container = document.getElementById('estadisticas-container');
     container.innerHTML = `<p class="text-sm text-slate-400 text-center py-8">Cargando métricas de rendimiento...</p>`;
 
-    fetch(`${materiaActual.scriptUrl}?action=getEstadisticas&materia=${materiaActual.codigo}`)
+    fetch(`${materiaActual.scriptUrl}?action=getEstadisticas&materia=${materiaActual.codigo}&email=${encodeURIComponent(emailUsuario)}`)
         .then(res => res.json())
         .then(data => {
             if (!Array.isArray(data) || data.length === 0) {
@@ -812,9 +839,7 @@ function cargarEstadisticasUsuario() {
 
             // Buscar por correo exacto o tomar el primero si está en modo offline/visitante
             let usuarioData = data.find(u => String(u.email).trim().toLowerCase() === emailUsuario);
-            if (!usuarioData && emailUsuario.includes('offline')) {
-                usuarioData = data[0]; // Muestra el primero como ejemplo si es offline
-            }
+            
 
             if (!usuarioData || !usuarioData.detallesObjetivos) {
                 container.innerHTML = `<div class="p-4 text-center text-slate-400 text-sm">Aún no tienes registros de práctica guardados para este usuario (${emailUsuario}).</div>`;
@@ -825,7 +850,7 @@ function cargarEstadisticasUsuario() {
                 <div class="bg-slate-50 p-4 rounded-xl mb-4 flex justify-between items-center">
                     <div>
                         <span class="text-xs text-slate-500 block">Estudiante</span>
-                        <span class="font-bold text-slate-800">${usuarioData.nombre || usuarioData.email}</span>
+                        <span class="font-bold text-slate-800">${esc(usuarioData.nombre || usuarioData.email)}</span>
                     </div>
                 </div>
                 <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
@@ -860,3 +885,69 @@ function cargarEstadisticasUsuario() {
             container.innerHTML = `<div class="p-4 text-center text-rose-500 text-sm">Error al conectar con el servidor de estadísticas.</div>`;
         });
 }
+
+
+
+// --- ARRANQUE, CAMBIO DE MATERIA Y AVISOS ---
+
+function arrancarApp() {
+    startSessionTimer();
+    fetchQuestions();
+    // primera vez sin materia elegida: que escoja en vez de mostrar Matemática I por defecto
+    if (!localStorage.getItem('mateuna_materia_activa')) showSection('materias');
+}
+
+function logoFallback(img) {
+    const d = document.createElement('div');
+    d.className = img.className.replace('object-contain', '') + ' bg-blue-900 text-white flex items-center justify-center font-bold';
+    d.textContent = img.dataset.ini || '?';
+    img.replaceWith(d);
+}
+
+function logoMateriaHtml(m, size) {
+    return `<img src="${esc(m.logo || '')}" alt="" data-ini="${esc(m.nombre.charAt(0))}" class="${size} object-contain rounded-xl" onerror="logoFallback(this)">`;
+}
+
+function renderMateriasSection() {
+    const grid = $id('materias-grid');
+    if (!grid) return;
+    grid.innerHTML = Object.values(MATERIAS_CONFIG).map(m => {
+        const activa = m.codigo === materiaActiva;
+        return `
+            <button onclick="cambiarMateria('${m.codigo}')"
+                class="flex flex-col items-center gap-2 p-5 rounded-2xl border text-center transition ${
+                    activa ? 'border-blue-900 bg-blue-50 ring-2 ring-blue-500' : 'border-slate-200 bg-white hover:border-blue-500 hover:bg-slate-50'
+                }">
+                ${logoMateriaHtml(m, 'w-16 h-16')}
+                <span class="font-bold text-slate-800 text-sm leading-tight">${esc(m.nombre)}</span>
+                <span class="text-xs text-slate-500">Código ${esc(m.codigos)}</span>
+                ${activa ? '<span class="text-[10px] font-bold text-blue-900 bg-blue-100 px-2 py-0.5 rounded-full">✔ Materia activa</span>' : ''}
+            </button>`;
+    }).join('');
+}
+
+function actualizarChipMateria() {
+    const chip = $id('materia-chip');
+    if (!chip) return;
+    const m = getMateriaActual();
+    chip.innerHTML = `${logoMateriaHtml(m, 'w-5 h-5')}<span class="hidden sm:inline">${esc(m.nombre)}</span><span class="sm:hidden">${esc(m.codigo)}</span>`;
+    chip.classList.remove('hidden');
+    chip.classList.add('flex');
+}
+
+function mostrarToast(msg, tipo = 'ok') {
+    let t = $id('toast');
+    if (!t) {
+        t = document.createElement('div');
+        t.id = 'toast';
+        t.setAttribute('role', 'status');
+        document.body.appendChild(t);
+    }
+    const base = 'fixed bottom-6 left-1/2 -translate-x-1/2 z-50 px-5 py-3 rounded-xl shadow-lg text-sm font-medium transition-opacity duration-300 pointer-events-none max-w-[90vw] text-center text-white ';
+    t.className = base + (tipo === 'info' ? 'bg-slate-800' : 'bg-emerald-600') + ' opacity-100';
+    t.textContent = msg;
+    clearTimeout(t._h);
+    t._h = setTimeout(() => { t.className = t.className.replace('opacity-100', 'opacity-0'); }, 3200);
+}
+
+window.addEventListener('beforeunload', () => localStorage.setItem('mateuna_total_study_seconds', totalStudySeconds));
