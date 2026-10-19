@@ -1,4 +1,4 @@
-const CACHE_NAME = 'mateuna-v1';
+const CACHE_NAME = 'mateuna-v2';
 const ASSETS_TO_CACHE = [
   './',
   './index.html',
@@ -7,12 +7,18 @@ const ASSETS_TO_CACHE = [
   './mateuna.css',
   './preguntas/p_mate1_175.csv',
   './ejercicios/e_mate1_175.csv',
+  './preguntas/p_mate2_178.csv',
+  './ejercicios/e_mate2_178.csv',
   './preguntas/p_topologia_768.csv',
   './ejercicios/e_topologia_768.csv',
   './estudio.html',
   './practica.html',
+  './factorizacion.html',
+  './limites.html',
   './manifest.json',
   './assets/una_logo.png',
+  './assets/topologo.png',
+  './assets/mateDOS.png',
   'https://cdn.tailwindcss.com'
 ];
 
