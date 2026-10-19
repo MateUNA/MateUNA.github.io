@@ -44,7 +44,9 @@
             </button>
         </div>
         <div class="flex items-center gap-3">
-            <h1 class="text-xl font-bold text-blue-900">MateUNA</h1>            
+            <h1 class="text-xl font-bold text-blue-900">MateUNA</h1>
+            <button id="materia-chip" onclick="showSection('materias')" title="Cambiar de materia"
+                class="hidden items-center gap-1.5 text-xs font-semibold bg-blue-50 text-blue-900 border border-blue-100 hover:bg-blue-100 px-2.5 py-1 rounded-full transition"></button>            
         </div>        
         <div id="auth-section">
             <div id="g_id_onload"
@@ -93,17 +95,9 @@
         
         <!-- MENÚ LATERAL (SIDEBAR) -->
         <aside id="sidebar-menu" class="hidden md:block bg-white p-4 rounded-2xl shadow-sm border border-slate-100 space-y-1 md:col-span-1">
-            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>            
+            <p class="text-xs font-bold uppercase tracking-wider text-slate-400 px-3 pb-2">Navegación</p>
+            <button onclick="showSection('materias')" id="nav-materias" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">🔄 Cambiar de materia</button>            
             
-            <!-- Selector global de materia -->
-            <select id="materia-select" onchange="cambiarMateria(this.value)" class="text-xs bg-slate-100 font-semibold border-none rounded-lg px-2 py-1 text-slate-700 cursor-pointer">
-              <option value="175">Matemática I (175/176/177)</option>
-              <option value="178">Matemática II (178/179)</option>
-              <option value="756">Calculo Integral (756)</option>
-              <option value="768">Topologia (768)</option>
-              <option value="773">Modelos Matematicos (773)</option>
-            </select>
-            <br/>
             <a href="./estudio.html">
                 <button id="nav-estudio" style="background-color:rgb(245 158 11);color:rgb(30 27 75)" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
                     📚 Ir a Central de Estudio
@@ -160,12 +154,21 @@
                 </div>
             </div>
 
+            <!-- VISTA: ELEGIR MATERIA -->
+            <div id="view-materias" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+                <div>
+                    <h2 class="text-xl font-bold text-blue-900">🎓 Elige tu materia</h2>
+                    <p class="text-sm text-slate-500 mt-1">Todo el contenido (quiz, plan, notas, estudio) se ajusta a la materia que selecciones.</p>
+                </div>
+                <div id="materias-grid" class="grid grid-cols-2 md:grid-cols-3 gap-4"></div>
+            </div>
+
             <!-- VISTA DINÁMICA GENERAL (Para Fundamentación, Plan, Links, etc.) -->
             <div id="view-dynamic" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
                 <!-- El contenido de texto inyectado por JS aparecerá aquí -->
             </div>
 
-            <div id="view-estadisticas" class=" bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
+            <div id="view-estadisticas" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
                 <div class="flex justify-between items-center border-b pb-4">
                     <div>
                         <h2 class="text-xl font-bold text-slate-800">📊 Panel de Efectividad y Progreso</h2>
@@ -186,7 +189,7 @@
 
     <!-- FOOTER -->
     <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
-        Universidad Nacional Abierta (UNA) • Centro Local Yaracuy • Practica Docemte 2026 • Ivan Lopez 
+        Universidad Nacional Abierta (UNA) • Centro Local Yaracuy • Práctica Docente 2026 • Ivan Lopez 
     </footer>
 
     <!-- SCRIPT DE LÓGICA -->
