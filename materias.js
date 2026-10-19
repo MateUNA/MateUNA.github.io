@@ -30,7 +30,7 @@ const MATERIAS_CONFIG = {
     codigo: "178",
     codigos: "178 / 179",
     nombre: "Matemática II",
-    logo: "./assets/materias/178.svg",
+    logo: "./assets/mateDOS.png",
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./preguntas/p_mate2_178.csv",
     csvEjercicios: "./ejercicios/p_mate2_178.csv"
@@ -48,7 +48,7 @@ const MATERIAS_CONFIG = {
     codigo: "768",
     codigos: "768",
     nombre: "Topología",
-    logo: "./assets/materias/768.svg",
+    logo: "./assets/topologo.jpg",
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./preguntas/p_topologia_768.csv",
     csvEjercicios: "./ejercicios/p_topologia_768.csv",
