@@ -13,6 +13,9 @@
     <link rel="icon" type="image/png" href="./assets/una_logo.png">
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
+    <!-- MathJax: fórmulas LaTeX con $...$ -->
+    <script>window.MathJax = { tex: { inlineMath: [['$', '$'], ['\\(', '\\)']] }, options: { skipHtmlTags: ['script', 'noscript', 'style', 'textarea', 'pre', 'code'] } };</script>
+    <script async src="https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js"></script>
     <!-- Google Identity Services (OAuth) -->
     <script src="https://accounts.google.com/gsi/client" async defer></script>
     <!-- Estilos personalizados -->
@@ -103,7 +106,7 @@
                     📚 Ir a Central de Estudio
                 </button>
             </a>
-            <button onclick="showSection('quiz')" id="nav-quiz" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">📊 Evaluaciones / Quiz</button>
+            <button onclick="showSection('entrenar')" id="nav-entrenar" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-blue-900 bg-blue-50 transition flex items-center gap-2">🎯 Práctica Inteligente</button>
             <button onclick="showSection('notas')" id="nav-notas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Mis Notas</button>
             <button onclick="showSection('fundamentacion')" id="nav-fundamentacion" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📖 Fundamentación</button>
             <button onclick="showSection('plan')" id="nav-plan" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📑 Plan de Curso</button>
@@ -115,7 +118,7 @@
             <button onclick="showSection('contacto')" id="nav-contacto" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">👨‍🏫 Contactos</button>
             <a href="./practica.html">
                 <button id="nav-practica" style="background-color:rgb(30 58 138);color:white" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">
-                    📝 Ir a la pagina de Practicas
+                    📝 Ejercicios paso a paso
                 </button>
             </a> 
             <!--<button onclick="showSection('estadisticas')" id="nav-estadisticas" class="w-full text-left px-3 py-2.5 rounded-xl font-medium text-sm text-slate-600 hover:bg-slate-50 transition flex items-center gap-2">📈 Estadísticas</button>-->
@@ -124,8 +127,83 @@
         <!-- CUERPO CENTRAL DINÁMICO -->
         <main class="md:col-span-3 space-y-6">
             
-            <!-- VISTA DE QUIZ (Se muestra por defecto al entrar) -->
-            <div id="view-quiz" class="space-y-6">
+            <!-- VISTA: PRÁCTICA INTELIGENTE (Leitner / Kim / Tutor IA / Quiz) -->
+            <div id="view-entrenar" class="space-y-6">
+                <div class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
+                    <button id="tab-leitner" onclick="abrirTabEntrenar('leitner')" class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200">📇 Leitner</button>
+                    <button id="tab-kims" onclick="abrirTabEntrenar('kims')" class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200">🧠 Kim's Game</button>
+                    <button id="tab-chat" onclick="abrirTabEntrenar('chat')" class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200">🤖 Tutor IA</button>
+                    <button id="tab-quiz" onclick="abrirTabEntrenar('quiz')" class="px-4 py-2 rounded-xl font-medium text-sm transition shrink-0 bg-slate-100 text-slate-700 hover:bg-slate-200">📊 Quiz</button>
+                </div>
+
+                <!-- LEITNER -->
+                <div id="pane-leitner">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100">
+                        <div class="flex flex-wrap justify-between items-center gap-2 mb-4">
+                            <span id="leitner-box-badge" class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Leitner</span>
+                            <select id="leitner-obj-filter" onchange="leitnerFiltrar()" class="hidden text-xs bg-slate-100 rounded-lg px-2 py-1 text-slate-700"></select>
+                            <span id="leitner-counter" class="text-xs text-slate-400"></span>
+                        </div>
+                        <div id="leitner-boxes" class="flex gap-2 mb-6 text-center"></div>
+                        <p id="leitner-msg" class="text-slate-500 text-sm text-center py-6">Cargando...</p>
+                        <div id="leitner-question" class="hidden text-lg md:text-xl font-semibold text-slate-800 my-6 text-center whitespace-pre-wrap"></div>
+                        <div id="leitner-answer-box" class="hidden mb-5 p-4 bg-blue-50 border border-blue-100 rounded-xl text-center">
+                            <div id="leitner-answer" class="text-base font-semibold text-blue-900 whitespace-pre-wrap"></div>
+                        </div>
+                        <button id="leitner-flip" onclick="voltearLeitner()" class="hidden w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 rounded-xl transition">Ver respuesta</button>
+                        <div id="leitner-actions" class="hidden grid grid-cols-2 gap-3">
+                            <button onclick="responderLeitner(false)" class="bg-rose-50 hover:bg-rose-100 text-rose-700 border border-rose-200 font-medium py-3 rounded-xl transition">❌ No la sabía</button>
+                            <button onclick="responderLeitner(true)" class="bg-emerald-50 hover:bg-emerald-100 text-emerald-700 border border-emerald-200 font-medium py-3 rounded-xl transition">✅ La sabía</button>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- KIM'S GAME -->
+                <div id="pane-kims" class="hidden">
+                    <div class="bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 text-center">
+                        <div class="flex justify-between items-center mb-3">
+                            <span id="kims-category-title" class="text-xs font-bold uppercase tracking-wider text-blue-600 bg-blue-50 px-3 py-1 rounded-full">Kim's Game</span>
+                            <button onclick="siguienteSetKim()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1 rounded-lg">🔀 Otro set</button>
+                        </div>
+                        <p id="kims-instruccion" class="text-sm text-slate-600"></p>
+                        <div id="kims-timer-display" class="hidden mt-2 font-bold text-blue-900">⏳ <span id="kims-timer-count">10</span> s</div>
+                        <div id="kims-cloud" class="flex flex-wrap gap-2 justify-center items-center min-h-[110px] bg-slate-50 border border-slate-100 rounded-xl p-5 my-4"></div>
+                        <button id="kims-skip" onclick="kimsYaMeLoSe()" class="hidden text-sm bg-slate-100 hover:bg-slate-200 text-slate-700 px-4 py-2 rounded-xl">Ya me lo sé →</button>
+                        <div id="kims-input-section" class="hidden mt-2 space-y-3">
+                            <input id="kims-answer" type="text" placeholder="Escribe lo que falta, separado por comas" onkeydown="if(event.key==='Enter') verificarKims()" class="w-full border border-slate-200 rounded-xl px-4 py-3 text-sm">
+                            <button onclick="verificarKims()" class="w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 rounded-xl transition">Comprobar</button>
+                        </div>
+                        <div id="kims-feedback" class="mt-4 text-sm font-semibold"></div>
+                        <button id="kims-next" onclick="siguienteSetKim()" class="hidden mt-4 w-full bg-blue-900 hover:bg-blue-800 text-white font-medium py-3 rounded-xl transition">Siguiente set →</button>
+                    </div>
+                </div>
+
+                <!-- TUTOR IA -->
+                <div id="pane-chat" class="hidden">
+                    <div class="bg-white p-6 rounded-2xl shadow-sm border border-slate-100 space-y-3">
+                        <div class="flex flex-wrap justify-between items-start gap-2">
+                            <div>
+                                <h3 class="font-bold text-blue-900">🤖 Tutor IA <span id="chat-materia-label" class="font-medium text-slate-500"></span></h3>
+                                <p class="text-xs text-slate-500">Te guía con preguntas y pistas; no te da la respuesta de entrada.</p>
+                            </div>
+                            <button onclick="chatNueva()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 px-3 py-1.5 rounded-lg">🗑 Nueva conversación</button>
+                        </div>
+                        <div class="flex gap-2">
+                            <input id="chat-tema" type="text" maxlength="120" placeholder="Tema (opcional): ej. compacidad, bases de una topología" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm">
+                            <button onclick="chatNueva()" class="bg-slate-800 hover:bg-slate-700 text-white text-sm font-medium px-4 rounded-xl">Empezar</button>
+                        </div>
+                        <div id="chat-temas-chips" class="flex flex-wrap gap-2"></div>
+                        <div id="chat-messages" class="h-96 overflow-y-auto bg-slate-50 border border-slate-100 rounded-xl p-4 flex flex-col gap-3"></div>
+                        <div class="flex gap-2 items-end">
+                            <textarea id="chat-input" rows="2" placeholder="Escribe tu duda o tu intento de solución..." onkeydown="if(event.key==='Enter' && !event.shiftKey){event.preventDefault(); chatEnviar();}" class="flex-1 border border-slate-200 rounded-xl px-3 py-2 text-sm resize-none"></textarea>
+                            <button id="chat-send" onclick="chatEnviar()" class="bg-blue-900 hover:bg-blue-800 disabled:opacity-50 text-white font-medium px-5 py-3 rounded-xl transition">Enviar</button>
+                        </div>
+                        <p class="text-[11px] text-slate-400">La IA puede equivocarse: contrasta con tu libro y con tu asesor. No sustituye a tu TSP.</p>
+                    </div>
+                </div>
+
+                <!-- QUIZ (el anterior, ahora como una pestaña más) -->
+                <div id="pane-quiz" class="hidden space-y-6">
                 <!-- Selector de Objetivos -->
                 <div id="objectives-tabs-container" class="flex gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-100 overflow-x-auto">
                     <!-- Se llenará dinámicamente mediante JS -->
@@ -153,6 +231,8 @@
                     <button onclick="loadQuestionsForCurrentObjective()" class="bg-emerald-600 text-white px-6 py-2.5 rounded-xl text-sm font-medium hover:bg-emerald-700 transition shadow-sm">Siguiente Pregunta</button>
                 </div>
             </div>
+
+            </div><!-- /view-entrenar -->
 
             <!-- VISTA: ELEGIR MATERIA -->
             <div id="view-materias" class="hidden bg-white p-6 md:p-8 rounded-2xl shadow-sm border border-slate-100 space-y-6">
@@ -195,6 +275,7 @@
     <!-- SCRIPT DE LÓGICA -->
     <script src="materias.js"></script>
     <script src="mateuna.js"></script>
+    <script src="entrenar.js"></script>
    
 </body>
 </html>
