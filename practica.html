@@ -6,6 +6,7 @@
   <title>Práctica Guiada por Pasos</title>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+  <script src="materias.js"></script>
   <style>
     :root {
       --primary: #2563eb;
@@ -47,12 +48,12 @@
       <label>Objetivo:</label>
       <select id="select-obj" onchange="filtrarEjercicios()"><option value="">Cargando...</option></select>
     </div>
-    </br>
+    <br>
     <div>
       <label>Semestre:</label>
       <select id="select-semestre" disabled><option value="all">Todos / Aleatorio</option></select>
     </div>
-    </br>
+    <br>
     <div style="align-self: end;">
       <button onclick="cargarEjercicio()">Cargar Ejercicio</button>
     </div>
@@ -77,15 +78,21 @@
 
   // Cargar datos del CSV al iniciar
   window.addEventListener('DOMContentLoaded', () => {
-    Papa.parse('ejercicios.csv', {
+    const materia = getMateriaActual();
+    const cargar = (url, alFallar) => Papa.parse(url, {
       download: true,
       header: true,
       skipEmptyLines: true,
       complete: function(results) {
+        const ok = results.data.length > 0 && results.meta.fields && results.meta.fields.includes('obj');
+        if (!ok && alFallar) return alFallar();
         ejerciciosData = results.data;
         poblarObjetivos();
-      }
+      },
+      error: function() { if (alFallar) alFallar(); }
     });
+    // primero el CSV de la materia activa; si no existe, el ejercicios.csv de siempre
+    cargar(materia.csvEjercicios, () => cargar('ejercicios.csv'));
   });
 
   function poblarObjetivos() {
