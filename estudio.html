@@ -7,7 +7,7 @@
     <!-- Tailwind CSS -->
     <script src="https://cdn.tailwindcss.com"></script>
     <!-- Lucide Icons -->
-    <script src="https://unpkg.com/lucide@latest"></script>
+    <script src="https://unpkg.com/lucide@0.263.1"></script>
     <style>
         .custom-scrollbar::-webkit-scrollbar { width: 6px; }
         .custom-scrollbar::-webkit-scrollbar-track { background: #f1f5f9; }
@@ -37,7 +37,7 @@
                     <i data-lucide="graduation-cap" class="w-6 h-6 text-indigo-400"></i>
                 </div>
                 <div>
-                    <h1 class="font-bold text-white text-base leading-tight">Matemática I</h1>
+                    <h1 id="materia-nombre" class="font-bold text-white text-base leading-tight">Cargando...</h1>
                     <p class="text-xs text-indigo-300">Portal de Contenidos UNA</p>
                 </div>
             </div>
@@ -127,29 +127,40 @@
     </div>
 
     <!-- LOGICA JS -->
+    <script src="materias.js"></script>
     <script>
-        const GOOGLE_SHEET_API_URL = "https://script.google.com/macros/s/AKfycbwnznaPLLJRji-QDgV4L18z1my_hYOwD2g4LdG9IDOruHFvozj2yVlga3DAiuugslSV/exec";
+        const API = () => getMateriaActual().scriptUrl; // misma URL y materia que la app principal
 
-        const OBJECTIVES = [
-            { id: "1.1", name: "Objetivo 1.1: N,Z,Q", desc: "Conjuntos numéricos, axiómica de números reales y propiedades." },
-            { id: "1.2", name: "Objetivo 1.2: Numeros Reales", desc: "Ecuaciones, inecuaciones y valor absoluto." },
-            { id: "1.3", name: "Objetivo 1.3: Orden en R", desc: "Geometría analítica, recta y secciones cónicas." },
-            { id: "2.1", name: "Objetivo 2.1: Sistema de Coordenadas", desc: "Relaciones y funciones reales de variable real." },
-            { id: "2.2", name: "Objetivo 2.2: Funciones Elementales", desc: "Operaciones con funciones y función inversa." },
-            { id: "2.3", name: "Objetivo 2.3: Representaciones Graficas", desc: "Funciones trascendentes (Exponencial, Logarítmica, Trigonométrica)." },
-            { id: "3.1", name: "Objetivo 3.1: Sucesiones", desc: "Sucesiones numéricas y concepto de límite de una sucesión." },
-            { id: "3.2", name: "Objetivo 3.2: Limites", desc: "Límite de una función real y propiedades de los límites." },
-            { id: "3.3", name: "Objetivo 3.3: Continuidad", desc: "Continuidad de funciones reales y teoremas de continuidad." }
-        ];
+        let OBJECTIVES = []; // sale de la materia activa (ver calcularObjetivos)
 
         let currentObjId = "1.1";
         let studyData = [];
 
         document.addEventListener("DOMContentLoaded", () => {
-            renderSidebar();
+            const m = getMateriaActual();
+            document.getElementById('materia-nombre').textContent = m.nombre;
+            document.title = "Centro de Estudio - " + m.nombre;
             loadStudyMaterials();
             lucide.createIcons();
         });
+
+        function calcularObjetivos() {
+            const m = getMateriaActual();
+            if (m.objetivos && m.objetivos.length) {
+                OBJECTIVES = m.objetivos;
+            } else {
+                const ids = [...new Set(studyData.map(i => String(i.objetivo).trim()))].filter(Boolean)
+                    .sort((a, b) => a.localeCompare(b, undefined, { numeric: true }));
+                OBJECTIVES = ids.map(id => ({ id, name: `Objetivo ${id}`, desc: '' }));
+            }
+            if (!OBJECTIVES.find(o => o.id === currentObjId)) currentObjId = OBJECTIVES[0] ? OBJECTIVES[0].id : '';
+        }
+
+        function refrescarVista() {
+            calcularObjetivos();
+            renderSidebar();
+            renderObjectiveContent();
+        }
 
         function toggleSidebar() {
             document.getElementById('sidebar').classList.toggle('hidden');
@@ -183,19 +194,18 @@
         }
 
         function loadStudyMaterials() {
-            const cached = localStorage.getItem('mateuna_study_data');
-            if (cached) {
-                studyData = JSON.parse(cached);
-                renderObjectiveContent();
-            }
+            const cacheKey = 'mateuna_study_data_' + materiaActiva; // un caché por materia
+            const cached = localStorage.getItem(cacheKey);
+            if (cached) { try { studyData = JSON.parse(cached); } catch (e) { studyData = []; } }
+            refrescarVista();
 
-            fetch(`${GOOGLE_SHEET_API_URL}?action=getStudyMaterials`)
+            fetch(`${API()}?action=getStudyMaterials&materia=${materiaActiva}`)
                 .then(res => res.json())
                 .then(data => {
-                    if (data && data.length > 0) {
+                    if (Array.isArray(data) && data.length > 0) {
                         studyData = data;
-                        localStorage.setItem('mateuna_study_data', JSON.stringify(data));
-                        renderObjectiveContent();
+                        localStorage.setItem(cacheKey, JSON.stringify(data));
+                        refrescarVista();
                     }
                 })
                 .catch(err => {
@@ -203,8 +213,16 @@
                 });
         }
 
+
         function renderObjectiveContent() {
             const objInfo = OBJECTIVES.find(o => o.id === currentObjId);
+            if (!objInfo) {
+                document.getElementById('obj-badge').innerText = getMateriaActual().nombre;
+                document.getElementById('obj-title').innerText = 'Sin objetivos cargados';
+                document.getElementById('obj-description').innerText = '';
+                document.getElementById('subtopics-container').innerHTML = '<div class="bg-white p-8 rounded-2xl text-center border border-dashed border-slate-300 text-slate-500"><p class="font-medium">Todavía no hay material cargado para esta materia.</p></div>';
+                return;
+            }
             document.getElementById('obj-badge').innerText = `Unidad Módulo: ${objInfo.id}`;
             document.getElementById('obj-title').innerText = objInfo.name;
             document.getElementById('obj-description').innerText = objInfo.desc;
