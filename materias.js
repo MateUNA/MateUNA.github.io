@@ -1,7 +1,7 @@
 // materias.js - Catálogo de Materias centralizado
 // Para agregar una materia: añade un bloque aquí, su logo en ./assets/materias/<codigo>.svg (o .png)
 // y su hoja de cálculo en GOOGLE_SHEETS_MAP dentro de mateAPP.gs.
-const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycbyfSS_MwmqR-a7laE72iuVLYWTmYdUTiIuUmBDAYjU36eE_c3Yy2hVyJahF1dqxa82O/exec";
+const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycbxJZM8tAq-OUgoz-tGq28t7o1G7y40eZwd_zbpbzZoVhPfpjdeENyDRpTXmOz1BU6h7/exec";
 
 const MATERIAS_CONFIG = {
   "175": {
@@ -51,7 +51,9 @@ const MATERIAS_CONFIG = {
     logo: "./assets/materias/768.svg",
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./preguntas/p_topologia_768.csv",
-    csvEjercicios: "./ejercicios/p_topologia_768.csv"
+    csvEjercicios: "./ejercicios/p_topologia_768.csv",
+    // Atajos de tema para el Tutor IA (edítalos a tu gusto)
+    temasChat: ["Espacios topológicos y bases", "Continuidad y homeomorfismos", "Compacidad", "Conexidad", "Axiomas de separación"]
   },
   "773": {
     codigo: "773",
