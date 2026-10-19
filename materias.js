@@ -1,7 +1,7 @@
 // materias.js - Catálogo de Materias centralizado
 // Para agregar una materia: añade un bloque aquí, su logo en ./assets/materias/<codigo>.svg (o .png)
 // y su hoja de cálculo en GOOGLE_SHEETS_MAP dentro de mateAPP.gs.
-const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycbxJZM8tAq-OUgoz-tGq28t7o1G7y40eZwd_zbpbzZoVhPfpjdeENyDRpTXmOz1BU6h7/exec";
+const WEB_APP_URL_CENTRAL = "https://script.google.com/macros/s/AKfycbxy7G-XsG9PwoW4B-pvwXKnP6BEyupIkwbQ79bFJ-bdLmNgRT1hegVC8fjPI7jg-rkw/exec";
 
 const MATERIAS_CONFIG = {
   "175": {
