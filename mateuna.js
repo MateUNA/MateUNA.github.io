@@ -362,7 +362,8 @@ function submitQuiz() {
     })
     .then(res => res.json())
     .catch(err => {
-        console.warn("Respuesta guardada solo en modo local.", err);
+        console.warn("Sin conexión: la respuesta quedó en cola y se enviará al volver la red.", err);
+        encolarRespuesta(payload);
     })
     .finally(() => {
         showFeedbackResult(isCorrect);
@@ -704,6 +705,46 @@ function toggleMobileMenu() {
     }
 }
 
+// --- COLA DE RESPUESTAS PENDIENTES (para usar sin conexión) ---
+const OUTBOX_KEY = 'mateuna_outbox';
+
+function leerOutbox() {
+    try { return JSON.parse(localStorage.getItem(OUTBOX_KEY) || '[]'); } catch (e) { return []; }
+}
+
+function encolarRespuesta(payload) {
+    const cola = leerOutbox();
+    cola.push(Object.assign({}, payload, { _pendiente: Date.now() }));
+    localStorage.setItem(OUTBOX_KEY, JSON.stringify(cola));
+}
+
+let vaciandoOutbox = false;
+async function vaciarOutbox() {
+    if (vaciandoOutbox || !navigator.onLine) return;
+    const cola = leerOutbox();
+    if (cola.length === 0) return;
+    vaciandoOutbox = true;
+    const pendientes = [];
+    for (const item of cola) {
+        try {
+            const res = await fetch(apiUrl(), {
+                method: "POST",
+                headers: { "Content-Type": "text/plain" },
+                body: JSON.stringify(item)
+            });
+            const json = await res.json();
+            if (!json || json.status !== "success") pendientes.push(item);
+        } catch (e) {
+            pendientes.push(item);
+        }
+    }
+    localStorage.setItem(OUTBOX_KEY, JSON.stringify(pendientes));
+    vaciandoOutbox = false;
+}
+
+window.addEventListener('online', vaciarOutbox);
+window.addEventListener('load', () => setTimeout(vaciarOutbox, 3000));
+
 if ('serviceWorker' in navigator) {
     window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js')
@@ -954,3 +995,4 @@ function mostrarToast(msg, tipo = 'ok') {
 }
 
 window.addEventListener('beforeunload', () => localStorage.setItem('mateuna_total_study_seconds', totalStudySeconds));
+
