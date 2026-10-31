@@ -37,6 +37,154 @@ function norm(t) {
     return String(t || '').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g, '').replace(/\s+/g, ' ').trim();
 }
 
+
+// =====================================================================
+//  MODO SIN CONEXIÓN (Leitner y Kim's Game)
+//  - Fichas y sets: se guardan en el dispositivo cada vez que se cargan con internet.
+//    Si nunca se abrió con internet, se leen de ./leitner/<materia>.csv y ./kim/<materia>.csv
+//  - Progreso Leitner: se calcula y guarda en el dispositivo; las respuestas dadas sin
+//    conexión se encolan y se envían a la hoja cuando vuelve internet.
+// =====================================================================
+// ==== OFFLINE-HELPERS ====
+const INTERVALOS_LEITNER = [0, 1, 3, 7, 15, 30]; // igual que en mateAPP.gs: días de espera según la caja (1..5)
+const LS_OUTBOX = 'mateuna_leitner_outbox';
+const LS_CARTAS = m => 'mateuna_lcards_' + m;
+const LS_PROG = (m, e) => 'mateuna_lprog_' + m + '_' + e;
+const LS_KIM = m => 'mateuna_kim_' + m;
+
+function leerLS(k, def) { try { const v = JSON.parse(localStorage.getItem(k)); return (v === null || v === undefined) ? def : v; } catch (e) { return def; } }
+function guardarLS(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch (e) {} }
+function pad2(n) { return String(n).padStart(2, '0'); }
+function isoDe(d) { return d.getFullYear() + '-' + pad2(d.getMonth() + 1) + '-' + pad2(d.getDate()); }
+function hoyISO() { return isoDe(new Date()); }
+function sumarDias(iso, n) { const p = iso.split('-').map(Number); return isoDe(new Date(p[0], p[1] - 1, p[2] + n)); }
+function conTimeout(promesa, ms) { return Promise.race([promesa, new Promise((_, rej) => setTimeout(() => rej(new Error('tiempo agotado')), ms))]); }
+function sinConexion() { return typeof navigator !== 'undefined' && navigator.onLine === false; }
+
+// CSV con comillas, comas y saltos de línea dentro de campos
+function parseCSV(texto) {
+    const filas = []; let fila = [], celda = '', comillas = false;
+    const t = String(texto || '').replace(/^\uFEFF/, '');
+    for (let i = 0; i < t.length; i++) {
+        const c = t[i];
+        if (comillas) {
+            if (c === '"') { if (t[i + 1] === '"') { celda += '"'; i++; } else comillas = false; }
+            else celda += c;
+        } else if (c === '"') comillas = true;
+        else if (c === ',') { fila.push(celda); celda = ''; }
+        else if (c === '\n') { fila.push(celda); filas.push(fila); fila = []; celda = ''; }
+        else if (c !== '\r') celda += c;
+    }
+    if (celda !== '' || fila.length) { fila.push(celda); filas.push(fila); }
+    return filas;
+}
+function csvAObjetos(texto) {
+    const f = parseCSV(texto).filter(r => r.some(x => String(x).trim() !== ''));
+    if (f.length < 2) return [];
+    const h = f[0].map(x => String(x).trim());
+    return f.slice(1).map(r => { const o = {}; h.forEach((k, i) => { o[k] = r[i] === undefined ? '' : r[i]; }); return o; });
+}
+function valorCampo(r, nombre) {
+    const k = Object.keys(r).find(x => x.trim().toLowerCase() === nombre);
+    return k ? String(r[k]) : '';
+}
+async function cargarCSV(url) {
+    try { const r = await fetch(url); if (!r.ok) return []; return csvAObjetos(await r.text()); } catch (e) { return []; }
+}
+async function cartasDesdeCSV(materia) {
+    const filas = await cargarCSV('./leitner/' + materia + '.csv');
+    return filas.map(r => ({
+        id: valorCampo(r, 'id').trim(), objetivo: valorCampo(r, 'objetivo').trim(),
+        anverso: valorCampo(r, 'anverso'), reverso: valorCampo(r, 'reverso')
+    })).filter(c => c.id && c.anverso.trim());
+}
+
+// Misma regla que el servidor: acierta -> sube una caja; falla -> vuelve a la caja 1
+function aplicarRespuestaLocal(prog, id, acierto, fechaISO) {
+    const actual = prog[id] ? (parseInt(prog[id].caja) || 1) : 1;
+    const nueva = acierto ? Math.min(actual + 1, 5) : 1;
+    prog[id] = { caja: nueva, proximo: sumarDias(fechaISO, INTERVALOS_LEITNER[nueva]) };
+    return nueva;
+}
+// Ficha pendiente = nueva o con fecha de repaso vencida (igual que getLeitner del servidor)
+function construirColaLeitner(cartas, prog, hoy) {
+    const cajas = { 1: 0, 2: 0, 3: 0, 4: 0, 5: 0 };
+    const due = [];
+    cartas.forEach(c => {
+        const p = prog[c.id];
+        const caja = p ? Math.min(Math.max(parseInt(p.caja) || 1, 1), 5) : 1;
+        cajas[caja]++;
+        if (!p || !p.proximo || p.proximo <= hoy) due.push({ id: c.id, objetivo: c.objetivo, anverso: c.anverso, reverso: c.reverso, caja });
+    });
+    due.sort((a, b) => a.caja - b.caja); // primero las más débiles
+    return { todas: due.slice(0, 40), resumen: { total: cartas.length, pendientes: due.length, cajas } };
+}
+// ==== FIN OFFLINE-HELPERS ====
+
+function leerOutbox() { return leerLS(LS_OUTBOX, []); }
+function pendientesLeitner(materia, email) { return leerOutbox().filter(ev => ev.materia === materia && ev.email === email).length; }
+
+let vaciandoLeitner = false;
+async function vaciarOutboxLeitner() {
+    if (vaciandoLeitner || sinConexion()) return;
+    const cola = leerOutbox();
+    if (!cola.length) return;
+    vaciandoLeitner = true;
+    const resto = [];
+    try {
+        for (const ev of cola) {
+            try {
+                const r = await conTimeout(apiPost(Object.assign({ action: 'leitnerResponder' }, ev)), 15000);
+                if (r && r.status === 'success') continue;
+                if (r && /inicia sesi/i.test(String(r.message || ''))) continue; // nunca se podrá guardar: se descarta
+                resto.push(ev);
+            } catch (e) { resto.push(ev); }
+        }
+    } finally {
+        const nuevos = leerOutbox().slice(cola.length); // respuestas dadas mientras se enviaba
+        guardarLS(LS_OUTBOX, resto.concat(nuevos));
+        vaciandoLeitner = false;
+    }
+}
+
+// Devuelve { cartas, prog, email, visitante, materia, conRed }: usa internet si hay; si no, lo guardado; si no, el CSV
+async function sincronizarLeitner() {
+    const materia = materiaActiva, visitante = esVisitante();
+    const email = visitante ? 'visitante' : emailActual().toLowerCase();
+    let cartas = leerLS(LS_CARTAS(materia), null);
+    let prog = leerLS(LS_PROG(materia, email), {});
+    let conRed = false;
+    if (!sinConexion()) {
+        if (!visitante) await vaciarOutboxLeitner();
+        try {
+            const params = { action: 'getLeitnerSync' };
+            if (!visitante) params.email = email;
+            const d = await conTimeout(apiGet(params), 12000);
+            if (d && Array.isArray(d.cartas) && !d.error) {
+                conRed = true;
+                cartas = d.cartas;
+                guardarLS(LS_CARTAS(materia), cartas);
+                // el servidor manda solo si no quedan respuestas pendientes de enviar
+                if (!visitante && pendientesLeitner(materia, email) === 0) { prog = d.progreso || {}; guardarLS(LS_PROG(materia, email), prog); }
+            }
+        } catch (e) { /* sin red o servidor lento: se usa lo guardado */ }
+    }
+    if (!cartas || !cartas.length) cartas = await cartasDesdeCSV(materia);
+    return { cartas: cartas || [], prog, email, visitante, materia, conRed };
+}
+
+// Deja guardado en el dispositivo lo necesario para estudiar sin internet
+async function precalentarOffline() {
+    if (sinConexion()) return;
+    try {
+        const d = await conTimeout(apiGet({ sheet: 'Kim' }), 12000);
+        if (Array.isArray(d) && d.length) guardarLS(LS_KIM(materiaActiva), d);
+    } catch (e) {}
+    try { await sincronizarLeitner(); } catch (e) {}
+}
+window.addEventListener('online', () => { vaciarOutboxLeitner(); precalentarOffline(); });
+window.addEventListener('load', () => setTimeout(() => { vaciarOutboxLeitner(); precalentarOffline(); }, 4000));
+
 function abrirTabEntrenar(tab) {
     if (tab) tabEntrenar = tab;
     ['leitner', 'kims', 'chat', 'quiz'].forEach(t => {
@@ -59,6 +207,7 @@ function resetEntrenamiento() {
     chat = { hist: [], enviando: false };
     const m = $id('leitner-msg'); if (m) m.textContent = 'Cargando...';
     const sb = $id('chat-send'); if (sb) sb.disabled = false;
+    setTimeout(() => { if (typeof precalentarOffline === 'function') precalentarOffline(); }, 800);
 }
 
 // =====================================================================
@@ -76,23 +225,27 @@ function leitnerUI(estado) {
     $id('leitner-msg').classList.toggle('hidden', ficha);
 }
 
+function recalcularLeitner() {
+    const b = leitner.base;
+    const r = construirColaLeitner(b.cartas, b.prog, hoyISO());
+    leitner.todas = r.todas;
+    leitner.resumen = r.resumen;
+}
+
 async function cargarLeitner() {
     const g = gen, msg = $id('leitner-msg');
     leitnerUI('mensaje');
-    if (esVisitante()) {
-        msg.textContent = 'Inicia sesión con tu cuenta de Google para que el método Leitner guarde tu progreso.';
-        return;
-    }
     msg.textContent = 'Cargando tus fichas...';
     try {
-        const d = await apiGet({ action: 'getLeitner', email: emailActual() });
+        const base = await sincronizarLeitner();
         if (g !== gen) return;
-        if (d.error) throw new Error(d.error);
-        leitner.todas = d.tarjetas || [];
-        leitner.resumen = d.resumen || { total: 0, pendientes: 0, cajas: {} };
+        leitner.base = base;
+        recalcularLeitner();
         cargado.leitner = true;
         poblarFiltroLeitner();
         aplicarFiltroLeitner();
+        if (base.visitante) mostrarToast('👤 Modo visitante: tu avance Leitner se guarda solo en este dispositivo.', 'info');
+        else if (sinConexion() || !base.conRed) mostrarToast('📴 Sin conexión: puedes estudiar; tu avance se enviará cuando vuelva internet.', 'info');
     } catch (e) {
         if (g === gen) msg.textContent = 'No se pudieron cargar las fichas: ' + e.message;
     }
@@ -156,29 +309,27 @@ function voltearLeitner() {
     mj($id('leitner-answer'));
 }
 
-async function responderLeitner(acierto) {
+function responderLeitner(acierto) {
     const c = leitner.cola[leitner.idx];
-    if (!c) return;
-    const botones = $id('leitner-actions').querySelectorAll('button');
-    botones.forEach(b => b.disabled = true);
-    const g = gen;
-    try {
-        if (!c.repaso) { // el repaso rápido de una ficha fallada no vuelve a mover de caja
-            const r = await apiPost({ action: 'leitnerResponder', email: emailActual(), id: c.id, acierto });
-            if (g !== gen) return;
-            if (r.status !== 'success') throw new Error(r.message || 'No se pudo guardar');
-            const cajas = leitner.resumen.cajas;
-            cajas[c.caja] = Math.max(0, (cajas[c.caja] || 1) - 1);
-            cajas[r.caja] = (cajas[r.caja] || 0) + 1;
-            renderCajasLeitner();
-            if (!acierto) leitner.cola.push(Object.assign({}, c, { repaso: true })); // la verás de nuevo al final
+    if (!c || !leitner.base) return;
+    if (!c.repaso) { // el repaso rápido de una ficha fallada no vuelve a mover de caja
+        const b = leitner.base, ts = hoyISO(), cajaAntes = c.caja;
+        const nueva = aplicarRespuestaLocal(b.prog, c.id, acierto, ts);
+        guardarLS(LS_PROG(b.materia, b.email), b.prog);
+        if (!b.visitante) {
+            const out = leerOutbox();
+            out.push({ materia: b.materia, email: b.email, id: c.id, acierto: !!acierto, ts: ts });
+            guardarLS(LS_OUTBOX, out);
+            vaciarOutboxLeitner(); // en segundo plano; sin red queda en la cola
         }
-        leitner.idx++;
-        mostrarFichaLeitner();
-    } catch (e) {
-        mostrarToast('⚠️ ' + e.message, 'info');
+        const cajas = leitner.resumen.cajas;
+        cajas[cajaAntes] = Math.max(0, (cajas[cajaAntes] || 1) - 1);
+        cajas[nueva] = (cajas[nueva] || 0) + 1;
+        renderCajasLeitner();
+        if (!acierto) leitner.cola.push(Object.assign({}, c, { repaso: true })); // la verás de nuevo al final
     }
-    botones.forEach(b => b.disabled = false);
+    leitner.idx++;
+    mostrarFichaLeitner();
 }
 
 // =====================================================================
@@ -207,18 +358,23 @@ function normalizarKim(r) {
 }
 
 async function cargarKims() {
-    const g = gen, cloud = $id('kims-cloud');
+    const g = gen, cloud = $id('kims-cloud'), materia = materiaActiva;
     cloud.textContent = 'Cargando sets...';
-    try {
-        const d = await apiGet({ sheet: 'Kim' });
-        if (g !== gen) return;
-        if (!Array.isArray(d)) throw new Error(d && d.error ? d.error : 'sin datos');
-        kims.sets = d.map(normalizarKim).filter(s => s.elementos.length >= 3);
-        cargado.kims = true;
-        siguienteSetKim();
-    } catch (e) {
-        if (g === gen) cloud.textContent = 'No hay sets de Kim\'s Game para esta materia todavía.';
+    let datos = null;
+    if (!sinConexion()) {
+        try {
+            const d = await conTimeout(apiGet({ sheet: 'Kim' }), 12000);
+            if (Array.isArray(d) && d.length) { datos = d; guardarLS(LS_KIM(materia), d); }
+        } catch (e) { /* sin red: se usa lo guardado */ }
     }
+    if (g !== gen) return;
+    if (!datos) datos = leerLS(LS_KIM(materia), null);
+    if (!datos || !datos.length) datos = await cargarCSV('./kim/' + materia + '.csv');
+    if (g !== gen) return;
+    kims.sets = (datos || []).map(normalizarKim).filter(s => s.elementos.length >= 3);
+    if (!kims.sets.length) { cloud.textContent = 'No hay sets de Kim\'s Game para esta materia todavía.'; return; }
+    cargado.kims = true;
+    siguienteSetKim();
 }
 
 function chipsKim(elementos, ocultasIdx) {
