@@ -1,0 +1,60 @@
+ID,Objetivo,Anverso,Reverso
+L_32_01,3.2,Sustituyo x = a en un cociente de polinomios y obtengo 0/0. ¿Qué hago?,"Factorizo numerador y denominador, simplifico el factor (x − a) y vuelvo a sustituir."
+L_32_02,3.2,Sustituyo y obtengo 0/0 y hay raíces cuadradas. ¿Qué hago?,"Racionalizo: multiplico numerador y denominador por el conjugado, simplifico y vuelvo a sustituir."
+L_32_03,3.2,¿Cuál es el conjugado de √x − 2?,√x + 2 (cambia el signo del medio). Así (√x − 2)(√x + 2) = x − 4.
+L_32_04,3.2,Factoriza x² − a²,(x − a)(x + a)
+L_32_05,3.2,¿Cuándo existe el límite de f(x) cuando x → a?,Cuando los límites laterales existen y son iguales.
+L_32_06,3.2,¿El límite cuando x → a depende del valor de f(a)?,"No. El límite describe a qué valor se acerca f cerca de a, aunque f(a) no esté definida."
+L_32_07,3.2,Límite en ∞ de un cociente de polinomios con el mismo grado arriba y abajo,El cociente de los coeficientes principales. Ej.: (3x² + 2x − 1)/(x² + 5) → 3.
+L_32_08,3.2,Límite en ∞ de un cociente de polinomios con menor grado arriba que abajo,0. Ej.: (4x² − 3x + 1)/(2x³ + x) → 0.
+L_32_09,3.2,Límite en ∞ de un cociente de polinomios con mayor grado arriba que abajo,No es finito: tiende a +∞ o a −∞.
+L_32_10,3.2,"En un límite en el infinito de un cociente de polinomios, ¿por qué divido?","Por la mayor potencia de x que aparezca. Luego 1/x, 1/x²... tienden a 0."
+L_32_11,3.2,Sustituyo x = a y obtengo k/0 con k ≠ 0. ¿Qué significa?,No es 0/0: no se puede simplificar. El límite es infinito o no existe (asíntota vertical); se revisan los laterales para ver el signo.
+L_32_12,3.2,Nombra cuatro indeterminaciones típicas,"0/0, ∞/∞, ∞ − ∞ y 0·∞. No valen un número: hay que transformar la expresión."
+L_32_13,3.2,lim x→2 (x² − 4)/(x − 2),"4. Factorizo (x − 2)(x + 2), simplifico y evalúo x + 2 en x = 2."
+L_32_14,3.2,"En una función a trozos, ¿cómo calculo el límite en el punto donde cambia la regla?","Calculo cada límite lateral con su fórmula (por la izquierda con la de la izquierda, por la derecha con la de la derecha) y los comparo."
+L_31_01,3.1,¿Qué es una sucesión?,"Una función cuyo dominio son los números naturales: a cada n = 1, 2, 3… le corresponde un número aₙ. Se escribe a₁, a₂, a₃, …"
+L_31_02,3.1,¿Qué es el término general de una sucesión?,"La fórmula aₙ que permite calcular cualquier término a partir de su posición n. Ej.: aₙ = 2n + 1 da 3, 5, 7, …"
+L_31_03,3.1,¿Cuándo una sucesión es creciente? ¿Y decreciente?,Creciente: aₙ₊₁ ≥ aₙ para todo n. Decreciente: aₙ₊₁ ≤ aₙ para todo n. Si cumple una de las dos se llama monótona.
+L_31_04,3.1,¿Cuándo una sucesión está acotada?,Cuando existe un número M tal que |aₙ| ≤ M para todo n: todos sus términos quedan entre −M y M.
+L_31_05,3.1,Progresión aritmética: ¿cuál es su término general?,"aₙ = a₁ + (n − 1)d, donde d es la diferencia constante entre términos consecutivos."
+L_31_06,3.1,Progresión geométrica: ¿cuál es su término general?,"aₙ = a₁ · rⁿ⁻¹, donde r es la razón constante: aₙ₊₁ / aₙ = r."
+L_31_07,3.1,"Halla el término general de 3, 5, 7, 9, …",Es aritmética con a₁ = 3 y d = 2: aₙ = 3 + (n − 1)·2 = 2n + 1.
+L_31_08,3.1,¿Qué es el error absoluto de una aproximación?,|valor exacto − valor aproximado|.
+L_31_09,3.1,¿Qué es el error relativo?,El error absoluto dividido entre el valor exacto: |exacto − aproximado| / |exacto|. Suele darse en porcentaje.
+L_31_10,3.1,¿Qué significa aproximar con un error menor que ε?,Encontrar un valor cuyo error absoluto sea menor que la tolerancia ε: |exacto − aproximado| < ε.
+L_31_11,3.1,Diferencia entre truncar y redondear,"Truncar: se corta el número en cierta cifra sin modificarla. Redondear: se ajusta la última cifra según la siguiente. Ej.: 3,14159 a 3 decimales → truncado 3,141; redondeado 3,142."
+L_31_12,3.1,"Al aproximar con una sucesión, ¿cuándo me detengo?","Cuando el error es menor que la tolerancia pedida o, en la práctica, cuando la diferencia entre dos términos consecutivos ya es menor que ella."
+L_31_13,3.1,¿Qué hizo Arquímedes para aproximar el área del círculo?,"Inscribió polígonos regulares con cada vez más lados (6, 12, 24, 48…) y calculó sus áreas, que se acercan al área del círculo (método de exhaución)."
+L_31_14,3.1,Área de un polígono regular de n lados inscrito en una circunferencia de radio r,Aₙ = (n/2)·r²·sen(2π/n). Es la suma de n triángulos de lados r y r con ángulo central 2π/n.
+L_31_15,3.1,¿Por qué el área del polígono inscrito es siempre menor que la del círculo?,"Porque el polígono está contenido dentro del círculo. Al aumentar n, Aₙ crece y se acerca a πr²."
+L_31_16,3.1,¿Qué pasa con el área si duplico el número de lados del polígono inscrito?,"Aumenta y se acerca más al área del círculo: A₆, A₁₂, A₂₄, … es una sucesión creciente y acotada por πr²."
+L_31_17,3.1,¿Cuál es el límite de Aₙ = (n/2)·r²·sen(2π/n) cuando n → ∞?,"πr², el área del círculo. Se usa que sen(x)/x → 1 cuando x → 0."
+L_31_18,3.1,¿Qué es una fórmula de recurrencia?,"Una regla que define cada término a partir de los anteriores, junto con un valor inicial. Ej.: a₁ = 1, aₙ₊₁ = aₙ + 2."
+L_31_19,3.1,¿Qué necesito para generar una sucesión por recurrencia?,El valor inicial (a₁) y la fórmula que da aₙ₊₁ en función de aₙ.
+L_31_20,3.1,Aproximar √a por recurrencia: ¿cuál es la fórmula?,"aₙ₊₁ = (aₙ + a/aₙ) / 2, con valor inicial a₁ > 0 (método de Herón o babilónico)."
+L_31_21,3.1,Aproxima √2 con a₁ = 1 y aₙ₊₁ = (aₙ + 2/aₙ)/2,"a₂ = 1,5; a₃ ≈ 1,41667; a₄ ≈ 1,41422. Se acerca rápidamente a √2 ≈ 1,41421."
+L_31_22,3.1,"Si aₙ₊₁ = f(aₙ) converge a L, ¿qué ecuación cumple L?",L = f(L): se toma el límite a ambos lados de la fórmula de recurrencia (suponiendo f continua).
+L_31_23,3.1,¿Qué significa que aₙ tiende a L cuando n → ∞?,Que los términos aₙ se acercan tanto como se quiera a L si n es suficientemente grande. Se escribe lím aₙ = L.
+L_31_24,3.1,¿Puede una sucesión tener límite sin llegar nunca a él?,"Sí. Ej.: aₙ = 1/n → 0 y ningún término es 0. El límite es el valor al que se acercan los términos, no necesariamente uno de ellos."
+L_31_25,3.1,¿Cuándo se dice que una sucesión converge? ¿Y que diverge?,"Converge: tiene límite finito L. Diverge: no tiene límite finito (tiende a +∞ o −∞, o no existe)."
+L_31_26,3.1,¿Cuántos límites puede tener una sucesión convergente?,"Uno solo: el límite, si existe, es único."
+L_31_27,3.1,¿Converge la sucesión aₙ = (−1)ⁿ?,No. Sus términos alternan entre −1 y 1 y no se acercan a un único valor: el límite no existe.
+L_31_28,3.1,¿Cómo se grafica una sucesión?,"Con puntos aislados (n, aₙ): n en el eje horizontal y aₙ en el vertical. No se unen con una línea porque n solo toma valores naturales."
+L_31_29,3.1,¿Cómo se ve en la gráfica que lím aₙ = L?,"Los puntos se acercan cada vez más a la recta horizontal y = L y, a partir de cierto n, quedan tan cerca de ella como se quiera."
+L_31_30,3.1,¿Cómo se ve en la gráfica una sucesión que tiende a +∞?,Los puntos suben sin parar y no se acercan a ninguna recta horizontal.
+L_31_31,3.1,¿Cómo se ve en la gráfica una sucesión que oscila y no tiene límite?,Los puntos saltan entre dos (o más) zonas y no se acercan a una única recta horizontal.
+L_31_32,3.1,"Límite de aₙ = (an + b)/(cn + d) cuando n → ∞, con c ≠ 0",a/c. Se divide entre n y los términos b/n y d/n tienden a 0.
+L_31_33,3.1,Cociente de polinomios en n con el mismo grado arriba y abajo,El límite es el cociente de los coeficientes principales. Ej.: (3n² + 2n − 1)/(n² + 5) → 3.
+L_31_34,3.1,Cociente de polinomios en n con menor grado arriba que abajo,El límite es 0. Ej.: (4n² − 3n + 1)/(2n³ + n) → 0.
+L_31_35,3.1,Cociente de polinomios en n con mayor grado arriba que abajo,"El límite es +∞ o −∞, según el signo de los coeficientes principales. Ej.: (n² + 1)/n → +∞."
+L_31_36,3.1,Límite de rⁿ según el valor de r,Si |r| < 1 → 0; si r = 1 → 1; si r > 1 → +∞; si r ≤ −1 → no existe (oscila).
+L_31_37,3.1,"Límite de √(n² + an) − n, con a constante",a/2. Se multiplica y divide por el conjugado √(n² + an) + n y luego se divide entre n.
+L_31_38,3.1,"Si aₙ → 0 y bₙ está acotada, ¿cuánto vale lím aₙ·bₙ?","0. Ej.: (−1)ⁿ/n → 0, porque (−1)ⁿ está acotada y 1/n → 0."
+L_31_39,3.1,Propiedades de los límites: si aₙ → A y bₙ → B,aₙ ± bₙ → A ± B; aₙ·bₙ → A·B; aₙ/bₙ → A/B si B ≠ 0.
+L_31_40,3.1,¿A qué converge la sucesión (1 + 1/n)ⁿ?,"Al número e ≈ 2,71828."
+L_31_41,3.1,Sucesión de Fibonacci: definición,"a₁ = 1, a₂ = 1 y aₙ₊₂ = aₙ₊₁ + aₙ: 1, 1, 2, 3, 5, 8, 13, … Cada término es la suma de los dos anteriores."
+L_31_42,3.1,"¿A qué tiende el cociente de términos consecutivos de Fibonacci, aₙ₊₁/aₙ?","A la razón áurea φ = (1 + √5)/2 ≈ 1,618."
+L_31_43,3.1,"Interés compuesto: capital C y tasa i por período, ¿cuánto hay después de n períodos?",Cₙ = C·(1 + i)ⁿ. Es una progresión geométrica de razón 1 + i.
+L_31_44,3.1,Crecimiento de una población con razón r > 1: ¿qué modelo sigue?,Pₙ = P₀·rⁿ: una progresión geométrica que tiende a +∞.
+L_31_45,3.1,Desintegración radiactiva o depreciación: ¿qué modelo sigue?,aₙ = a₀·rⁿ con 0 < r < 1: una progresión geométrica decreciente que tiende a 0.

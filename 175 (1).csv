@@ -1,0 +1,24 @@
+ID,Objetivo,Categoria,Elementos,Dificultad
+KG_32_01,3.2,Técnicas para levantar indeterminaciones,factorizar; racionalizar; usar el conjugado; simplificar; dividir entre la mayor potencia; volver a sustituir,1
+KG_32_02,3.2,Tipos de indeterminación,0/0; ∞/∞; ∞ − ∞; 0·∞,1
+KG_32_03,3.2,Pasos de un límite por factorización,sustituir x = a; detectar 0/0; factorizar; simplificar el factor común; sustituir de nuevo; escribir el resultado,2
+KG_32_04,3.2,Límites laterales y existencia,límite por la izquierda; límite por la derecha; función a trozos; punto de cambio; deben coincidir; si no coinciden no existe,2
+KG_32_05,3.2,Límites al infinito de cocientes de polinomios,mayor potencia; dividir entre x^n; 1/x tiende a 0; grados iguales; grado menor; grado mayor,2
+KG_31_01,3.1,3.1.1 Elementos de una sucesión,término general; primer término; índice n; término n-ésimo; sucesión finita; sucesión infinita,1
+KG_31_02,3.1,3.1.1 Tipos de sucesiones,creciente; decreciente; constante; acotada; alternada; progresión aritmética; progresión geométrica,2
+KG_31_03,3.1,3.1.2 Vocabulario de aproximación,valor exacto; valor aproximado; error absoluto; error relativo; truncamiento; redondeo; cifras significativas,1
+KG_31_04,3.1,3.1.2 Cómo aproximar con un error permitido,fijar la tolerancia; escoger un método; calcular términos sucesivos; comparar con el término anterior; detenerse cuando el error es menor que la tolerancia,2
+KG_31_05,3.1,3.1.3 Elementos del polígono inscrito,circunferencia; polígono regular; vértices sobre la circunferencia; lado; apotema; radio; número de lados,1
+KG_31_06,3.1,3.1.3 Idea de Arquímedes para el círculo,inscribir un polígono regular; duplicar el número de lados; calcular el área del polígono; el área se acerca a la del círculo; el área del polígono nunca supera la del círculo; en el límite el área es πr²,2
+KG_31_07,3.1,3.1.4 Elementos de una fórmula de recurrencia,valor inicial; fórmula de recurrencia; término anterior; término siguiente; iteración; aproximación,1
+KG_31_08,3.1,3.1.4 Aproximar un número por recurrencia,elegir un valor inicial; aplicar la fórmula; calcular el siguiente término; repetir el proceso; comparar términos consecutivos; detenerse cuando la diferencia es pequeña,2
+KG_31_09,3.1,3.1.5 Idea intuitiva del límite de una sucesión,los términos se acercan; valor límite; n tiende a infinito; sucesión convergente; sucesión divergente; puede no alcanzar el valor,1
+KG_31_10,3.1,3.1.5 Convergencia y divergencia,converge a un número; diverge a más infinito; diverge a menos infinito; oscila sin límite; el límite es único,2
+KG_31_11,3.1,3.1.6 Lectura gráfica de una sucesión,puntos aislados; eje n; eje aₙ; recta horizontal; los puntos se acercan a la recta y = L; el valor L está en el eje vertical,1
+KG_31_12,3.1,3.1.6 Qué se ve cuando no hay límite,los puntos crecen sin parar; los puntos decrecen sin parar; los puntos saltan entre dos zonas; no hay recta horizontal a la que se acerquen,2
+KG_31_13,3.1,3.1.7 Pasos para un cociente de polinomios en n,identificar la mayor potencia de n; dividir numerador y denominador entre ella; los términos 1/n tienden a 0; calcular el límite que queda; escribir el resultado,2
+KG_31_14,3.1,3.1.7 Casos según el grado,grados iguales; menor grado arriba; mayor grado arriba; coeficientes principales; límite cero; límite infinito,2
+KG_31_15,3.1,3.1.7 Casos de la razón en rⁿ,razón entre −1 y 1; razón mayor que 1; razón igual a 1; razón menor o igual que −1,1
+KG_31_16,3.1,3.1.7 Límites con raíces,indeterminación ∞ − ∞; conjugado; multiplicar y dividir; diferencia de cuadrados; simplificar; dividir entre n,3
+KG_31_17,3.1,3.1.8 Sucesiones importantes,progresión aritmética; progresión geométrica; sucesión de Fibonacci; sucesión que converge al número e; sucesión armónica 1/n; sucesión alternada,2
+KG_31_18,3.1,3.1.8 Aplicaciones de las sucesiones,interés compuesto; crecimiento de una población; desintegración radiactiva; depreciación de un bien; aproximación de π; razón áurea con Fibonacci,2
