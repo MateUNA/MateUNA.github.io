@@ -5,7 +5,7 @@
 //  - Datos de Google Apps Script (GET): primero red, y si no hay conexión se usa la última respuesta guardada.
 //  - Los POST (guardar respuestas) NO pasan por aquí: mateuna.js los encola en localStorage y los reenvía al volver la red.
 
-const VERSION = 'v3';                        // sube este número cada vez que quieras forzar una actualización
+const VERSION = 'v4';                        // sube este número cada vez que quieras forzar una actualización
 const STATIC_CACHE = `mateuna-static-${VERSION}`;
 const DATA_CACHE = 'mateuna-data';           // respuestas JSON de Apps Script (persiste entre versiones)
 
@@ -20,6 +20,7 @@ const LOCAL_ASSETS = [
   './mateuna.js',
   './materias.js',
   './entrenar.js',
+  './libs/tailwind.js',   // copia local de Tailwind (ver instrucciones); si no existe, se omite
   './mateuna.css',
   './manifest.json',
   // preguntas y ejercicios (nombres tal como están en materias.js)
@@ -41,22 +42,18 @@ const LOCAL_ASSETS = [
   './assets/topologo.png',
   './assets/materias/175.svg',
   './assets/materias/756.svg',
-  './assets/materias/773.svg',
-  // libs
-  './libs/tailwind.js'
+  './assets/materias/773.svg'
 ];
 
 // URLs exactas que usan tus HTML
 const CDN_ASSETS = [
-  'https://cdn.tailwindcss.com',
   'https://cdn.jsdelivr.net/npm/mathjax@3.2.2/es5/tex-mml-chtml.js',
-  'https://unpkg.com/lucide@0.263.1',
+  'https://cdn.jsdelivr.net/npm/lucide@0.263.1/dist/umd/lucide.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/mathjs/11.8.0/math.js'
 ];
 
 const CDN_HOSTS = [
-  'cdn.tailwindcss.com',
   'cdn.jsdelivr.net',
   'cdnjs.cloudflare.com',
   'unpkg.com',
