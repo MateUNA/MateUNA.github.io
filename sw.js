@@ -5,7 +5,7 @@
 //  - Datos de Google Apps Script (GET): primero red, y si no hay conexión se usa la última respuesta guardada.
 //  - Los POST (guardar respuestas) NO pasan por aquí: mateuna.js los encola en localStorage y los reenvía al volver la red.
 
-const VERSION = 'v4';                        // sube este número cada vez que quieras forzar una actualización
+const VERSION = 'v6';                        // sube este número cada vez que quieras forzar una actualización
 const STATIC_CACHE = `mateuna-static-${VERSION}`;
 const DATA_CACHE = 'mateuna-data';           // respuestas JSON de Apps Script (persiste entre versiones)
 
@@ -20,7 +20,7 @@ const LOCAL_ASSETS = [
   './sucesiones.html',
   './mateuna.js',
   './materias.js',
-  './entrenar.js',  
+  './entrenar.js',
   './libs/tailwind.js',   // copia local de Tailwind (ver instrucciones); si no existe, se omite
   './mateuna.css',
   './manifest.json',
@@ -36,6 +36,16 @@ const LOCAL_ASSETS = [
   './ejercicios/p_topologia_768.csv',
   './ejercicios/p_mod_matem_773.csv',
   './ejercicios.csv',
+  './leitner/175.csv',
+  './kim/175.csv',
+  './leitner/178.csv',
+  './kim/178.csv',
+  './leitner/756.csv',
+  './kim/756.csv',
+  './leitner/768.csv',
+  './kim/768.csv',
+  './leitner/773.csv',
+  './kim/773.csv',
   // imágenes
   './assets/una_logo.png',
   './assets/mateDOS.png',
