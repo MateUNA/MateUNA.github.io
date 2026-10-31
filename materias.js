@@ -12,6 +12,8 @@ const MATERIAS_CONFIG = {
     scriptUrl: WEB_APP_URL_CENTRAL,
     csvPreguntas: "./preguntas/p_mate1_175.csv",
     csvEjercicios: "./ejercicios/p_mate1_175.csv",
+    // Atajos de tema para el Tutor IA
+    temasChat: ["Límites: factorización (0/0)", "Límites con raíces (racionalizar)", "Límites al infinito", "Límites laterales"],
     // Lista fija de objetivos para la Central de Estudio. Si una materia no la trae,
     // la Central de Estudio arma la lista con los objetivos que existan en su hoja.
     objetivos: [
