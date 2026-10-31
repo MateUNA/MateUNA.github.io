@@ -41,7 +41,9 @@ const LOCAL_ASSETS = [
   './assets/topologo.png',
   './assets/materias/175.svg',
   './assets/materias/756.svg',
-  './assets/materias/773.svg'
+  './assets/materias/773.svg',
+  // libs
+  './libs/tailwind.js'
 ];
 
 // URLs exactas que usan tus HTML
