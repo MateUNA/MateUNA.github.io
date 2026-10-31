@@ -1,0 +1,496 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dojo de Sucesiones - MateUNA</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between font-sans">
+
+    <!-- HEADER -->
+    <header class="bg-indigo-950 text-white p-4 shadow-md sticky top-0 z-50 flex justify-between items-center">
+        <div class="flex items-center gap-2">
+            <span class="text-xl">📈</span>
+            <h1 class="font-bold text-base md:text-lg">Dojo de Límites de Sucesiones</h1>
+        </div>
+        <a href="estudio.html" class="text-xs bg-indigo-800 hover:bg-indigo-700 text-indigo-100 px-3 py-1.5 rounded-lg font-medium transition">
+            ← Volver al Aula
+        </a>
+    </header>
+
+    <main class="max-w-3xl mx-auto p-4 md:p-6 w-full flex-grow space-y-6">
+
+        <!-- PUNTUACIÓN -->
+        <div class="bg-white p-4 rounded-2xl shadow-sm border border-slate-200 flex justify-between items-center gap-2">
+            <div>
+                <span class="text-xs text-slate-400 block uppercase font-bold">Puntaje</span>
+                <span id="score-val" class="text-2xl font-black text-indigo-900 font-mono">0</span>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block uppercase font-bold">Racha</span>
+                <span id="streak-val" class="text-2xl font-black text-amber-500 font-mono">🔥 0</span>
+                <span id="best-val" class="text-[10px] text-slate-400 block">Mejor: 0</span>
+            </div>
+            <div class="text-center">
+                <span class="text-xs text-slate-400 block uppercase font-bold">Aciertos</span>
+                <span id="hits-val" class="text-2xl font-black text-emerald-600 font-mono">0/0</span>
+            </div>
+            <button onclick="toggleTeoria()" class="text-xs bg-indigo-50 hover:bg-indigo-100 text-indigo-700 font-bold px-3 py-2 rounded-xl transition border border-indigo-100">
+                📖 Consejos
+            </button>
+        </div>
+
+        <!-- TEORÍA -->
+        <section id="teoria-box" class="bg-indigo-900 text-indigo-100 p-5 rounded-2xl shadow-md hidden space-y-3 text-xs leading-relaxed">
+            <div class="flex justify-between items-center">
+                <h3 class="font-bold text-base text-white">💡 Cómo calcular el límite de una sucesión</h3>
+                <button onclick="toggleTeoria()" class="text-indigo-300 hover:text-white text-sm font-bold">✕ Cerrar</button>
+            </div>
+            <p><strong class="text-amber-300">Cociente de polinomios en n:</strong> divide numerador y denominador entre la mayor potencia de n. Los términos 1/n, 1/n², … tienden a 0.</p>
+            <ul class="list-disc pl-5 space-y-1">
+                <li>Mismo grado arriba y abajo → cociente de los coeficientes principales.</li>
+                <li>Menor grado arriba → el límite es <strong>0</strong>.</li>
+                <li>Mayor grado arriba → tiende a <strong>+∞ o −∞</strong> (mira el signo).</li>
+            </ul>
+            <p><strong class="text-amber-300">Potencias rⁿ:</strong> si |r| &lt; 1 tiende a 0; si r &gt; 1 tiende a +∞; si r ≤ −1 oscila y el límite no existe.</p>
+            <p><strong class="text-amber-300">Raíces:</strong> si al sustituir sale ∞ − ∞, multiplica y divide por el conjugado.</p>
+            <p><strong class="text-amber-300">Alternancia (−1)ⁿ:</strong> si lo multiplica algo que tiende a 0, el límite es 0; si lo multiplica algo que tiende a un número distinto de 0, la sucesión oscila y no existe el límite.</p>
+        </section>
+
+        <!-- NIVELES -->
+        <div id="niveles" class="flex flex-wrap gap-2 bg-white p-2 rounded-2xl shadow-sm border border-slate-200"></div>
+
+        <!-- RETO -->
+        <section class="bg-white p-6 rounded-2xl shadow-sm border border-slate-200 text-center space-y-5">
+            <div>
+                <span id="badge-nivel" class="inline-block px-3 py-1 bg-amber-50 text-amber-800 font-bold text-xs rounded-full border border-amber-100 mb-2">Reto</span>
+                <h2 class="text-sm text-slate-500 font-medium">Calcula el límite de la sucesión cuando n → ∞:</h2>
+                <div id="expr-display" class="text-2xl md:text-3xl font-black text-indigo-950 my-5 tracking-wide flex items-center justify-center flex-wrap gap-1"></div>
+            </div>
+
+            <div class="bg-slate-50 p-4 rounded-xl border border-slate-200 max-w-md mx-auto space-y-3">
+                <p class="text-xs text-slate-600 font-medium">Escribe un número (ej. <span class="font-mono">3/2</span> o <span class="font-mono">0.5</span>) o elige:</p>
+                <input id="input-resp" type="text" inputmode="text" autocomplete="off" placeholder="Tu respuesta"
+                       class="w-full p-3 text-center border border-slate-300 rounded-xl font-mono text-lg font-bold focus:ring-2 focus:ring-indigo-600 focus:outline-none">
+                <div class="flex justify-center gap-2 flex-wrap">
+                    <button onclick="poner('+∞')" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-bold">+∞</button>
+                    <button onclick="poner('−∞')" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-bold">−∞</button>
+                    <button onclick="poner('No existe')" class="text-xs bg-white border border-slate-300 hover:bg-slate-100 px-3 py-1.5 rounded-lg font-bold">No existe</button>
+                </div>
+                <button id="btn-check" onclick="comprobar()" class="w-full bg-indigo-600 hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-sm cursor-pointer">
+                    Comprobar
+                </button>
+                <div class="flex justify-center gap-2 flex-wrap">
+                    <button id="btn-pista" onclick="verPista()" class="text-xs bg-amber-50 hover:bg-amber-100 text-amber-800 border border-amber-200 px-3 py-1.5 rounded-lg font-bold">💡 Pista</button>
+                    <button id="btn-valores" onclick="verValores()" class="text-xs bg-sky-50 hover:bg-sky-100 text-sky-800 border border-sky-200 px-3 py-1.5 rounded-lg font-bold">🔢 Ver valores</button>
+                    <button id="btn-rendir" onclick="rendirse()" class="text-xs bg-slate-100 hover:bg-slate-200 text-slate-600 border border-slate-200 px-3 py-1.5 rounded-lg font-bold">Ver solución</button>
+                </div>
+            </div>
+
+            <div id="pista-box" class="hidden max-w-md mx-auto p-3 rounded-xl bg-amber-50 border border-amber-200 text-amber-900 text-xs text-left"></div>
+            <div id="valores-box" class="hidden max-w-md mx-auto text-left"></div>
+            <div id="feedback-box" class="hidden p-4 rounded-xl text-sm font-medium text-left"></div>
+
+            <div id="resultado-box" class="hidden space-y-4">
+                <div class="bg-slate-900 rounded-xl p-2">
+                    <canvas id="canvas-grafica" width="560" height="260" class="w-full h-auto"></canvas>
+                    <p id="grafica-nota" class="text-[11px] text-slate-400 mt-1"></p>
+                </div>
+                <button onclick="nuevoProblema()" class="bg-emerald-600 hover:bg-emerald-700 text-white font-bold px-6 py-2.5 rounded-xl text-sm transition shadow-sm cursor-pointer">
+                    Siguiente reto ➔
+                </button>
+            </div>
+        </section>
+    </main>
+
+    <footer class="text-center py-6 text-xs text-slate-400 border-t bg-white mt-auto">
+        Práctica Docente 2026 • Universidad Nacional Abierta (UNA) • Minijuego Didáctico
+    </footer>
+
+    <script>
+    // ==== GENERADORES ====
+    function randInt(a, b) { return Math.floor(Math.random() * (b - a + 1)) + a; }
+    function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+    function gcd(a, b) { a = Math.abs(a); b = Math.abs(b); while (b) { const t = a % b; a = b; b = t; } return a || 1; }
+    function fracVal(p, q) { if (q < 0) { p = -p; q = -q; } const g = gcd(p, q); return { tipo: 'num', p: p / g, q: q / g }; }
+    function fmtL(L) {
+        if (L.tipo === 'pinf') return '+∞';
+        if (L.tipo === 'minf') return '−∞';
+        if (L.tipo === 'ne') return 'no existe';
+        const s = L.q === 1 ? String(L.p) : L.p + '/' + L.q;
+        return s.replace('-', '−');
+    }
+    function sg(c) { return c < 0 ? '−' : '+'; }
+
+    // polinomio con signos correctos: poly([3,-2,1], ['n²','n','']) -> "3n² − 2n + 1"
+    function poly(coefs, vars) {
+        let s = '';
+        coefs.forEach((c, i) => {
+            if (c === 0) return;
+            const v = vars[i], a = Math.abs(c);
+            const cuerpo = (v && a === 1 && v[0] !== '/') ? v : a + v;
+            if (s === '') s = (c < 0 ? '−' : '') + cuerpo;
+            else s += (c < 0 ? ' − ' : ' + ') + cuerpo;
+        });
+        return s || '0';
+    }
+    function frac(a, b) {
+        return '<span class="inline-flex flex-col items-center align-middle mx-1"><span class="px-2 border-b-2 border-indigo-950 pb-0.5">' + a + '</span><span class="px-2 pt-0.5">' + b + '</span></span>';
+    }
+    function expN(b) { return b + '<sup>n</sup>'; }
+    const aN = 'a<sub>n</sub>';
+
+    // Nivel 1: cociente lineal, mismo grado
+    function nivel1() {
+        const r = randInt(1, 6), p = randInt(1, 9) * pick([1, 1, -1]), q = randInt(-5, 9), s = randInt(1, 9);
+        return {
+            expr: frac(poly([p, q], ['n', '']), poly([r, s], ['n', ''])),
+            f: n => (p * n + q) / (r * n + s),
+            L: fracVal(p, r), nMax: 30, ns: [10, 100, 1000],
+            pista: 'Divide el numerador y el denominador entre la mayor potencia de n (aquí, n). Los términos con 1/n se van a 0.',
+            solucion: 'Divide numerador y denominador entre <b>n</b>: ' + frac(poly([p, q], ['', '/n']), poly([r, s], ['', '/n'])) +
+                '. Cuando n → ∞, los términos con 1/n tienden a 0, así que queda ' + frac(p, r) + ' = <b>' + fmtL(fracVal(p, r)) + '</b>.'
+        };
+    }
+    // Nivel 2: cociente cuadrático, mismo grado
+    function nivel2() {
+        const p = randInt(1, 9) * pick([1, 1, -1]), q = randInt(-6, 9), t = randInt(-5, 9);
+        const r = randInt(1, 6), s = randInt(0, 9), u = randInt(1, 9);
+        const L = fracVal(p, r);
+        return {
+            expr: frac(poly([p, q, t], ['n²', 'n', '']), poly([r, s, u], ['n²', 'n', ''])),
+            f: n => (p * n * n + q * n + t) / (r * n * n + s * n + u),
+            L, nMax: 30, ns: [10, 100, 1000],
+            pista: 'Mismo grado arriba y abajo. Divide todo entre n² y recuerda qué hacen 1/n y 1/n² cuando n crece.',
+            solucion: 'Divide numerador y denominador entre <b>n²</b>: ' + frac(poly([p, q, t], ['', '/n', '/n²']), poly([r, s, u], ['', '/n', '/n²'])) +
+                '. Los términos con 1/n y 1/n² tienden a 0, así que el límite es ' + frac(p, r) + ' = <b>' + fmtL(L) + '</b>.'
+        };
+    }
+    // Nivel 3: grados distintos
+    function nivel3() {
+        const forma = pick(['a', 'b', 'c']);
+        if (forma === 'a') {
+            const p = randInt(1, 9) * pick([1, -1]), q = randInt(-6, 9), r = randInt(1, 6), s = randInt(0, 9), u = randInt(1, 9);
+            return {
+                expr: frac(poly([p, q], ['n', '']), poly([r, s, u], ['n²', 'n', ''])),
+                f: n => (p * n + q) / (r * n * n + s * n + u),
+                L: { tipo: 'num', p: 0, q: 1 }, nMax: 30, ns: [10, 100, 1000],
+                pista: 'Compara el grado del numerador con el del denominador: ¿cuál crece más rápido?',
+                solucion: 'El denominador tiene mayor grado (n²). Divide todo entre <b>n²</b>: ' + frac(poly([p, q], ['/n', '/n²']), poly([r, s, u], ['', '/n', '/n²'])) +
+                    '. El numerador tiende a 0 y el denominador a ' + r + ', así que el límite es <b>0</b>.'
+            };
+        }
+        if (forma === 'b') {
+            const p = randInt(1, 9) * pick([1, -1]), q = randInt(-6, 9), t = randInt(-5, 9), r = randInt(1, 6), s = randInt(1, 9);
+            const L = { tipo: p > 0 ? 'pinf' : 'minf' };
+            return {
+                expr: frac(poly([p, q, t], ['n²', 'n', '']), poly([r, s], ['n', ''])),
+                f: n => (p * n * n + q * n + t) / (r * n + s),
+                L, nMax: 30, ns: [10, 100, 1000],
+                pista: 'Compara los grados: el numerador crece más rápido que el denominador. Fíjate en el signo del coeficiente principal.',
+                solucion: 'El numerador tiene mayor grado (n²) que el denominador (n). Dividiendo entre <b>n</b>: ' + frac(poly([p, q, t], ['n', '', '/n']), poly([r, s], ['', '/n'])) +
+                    '. El denominador tiende a ' + r + ' y el numerador crece sin límite con signo ' + (p > 0 ? 'positivo' : 'negativo') + ', así que tiende a <b>' + fmtL(L) + '</b>.'
+            };
+        }
+        const p = randInt(1, 9) * pick([1, -1]), q = randInt(-6, 9), r = randInt(1, 6), s = randInt(1, 9);
+        const L = { tipo: p > 0 ? 'pinf' : 'minf' };
+        return {
+            expr: frac(poly([p, 0, 0, q], ['n³', 'n²', 'n', '']), poly([r, 0, s], ['n²', 'n', ''])),
+            f: n => (p * n * n * n + q) / (r * n * n + s),
+            L, nMax: 30, ns: [10, 100, 1000],
+            pista: 'Grado 3 arriba, grado 2 abajo. ¿Quién gana cuando n es enorme? Mira el signo.',
+            solucion: 'El numerador (n³) tiene mayor grado que el denominador (n²). Dividiendo entre <b>n²</b> queda ' + frac(poly([p, q], ['n', '/n²']), poly([r, s], ['', '/n²'])) +
+                ', y el numerador crece sin límite con signo ' + (p > 0 ? 'positivo' : 'negativo') + ': tiende a <b>' + fmtL(L) + '</b>.'
+        };
+    }
+    // Nivel 4: exponenciales y signos alternos
+    function nivel4() {
+        const tipo = pick(['A', 'B', 'C', 'D', 'E', 'F']);
+        if (tipo === 'A') {
+            const b = pick([2, 3, 4, 5]), c = pick([-1, 1, 2, 3, 4, 5, 6]);
+            let e = pick([-1, 1, 2, 3, 4, 5, 6]); if (e === c) e = e === 6 ? 5 : e + 1;
+            return {
+                expr: frac(expN(b) + ' ' + sg(c) + ' ' + Math.abs(c), expN(b) + ' ' + sg(e) + ' ' + Math.abs(e)),
+                f: n => (Math.pow(b, n) + c) / (Math.pow(b, n) + e),
+                L: fracVal(1, 1), nMax: 12, ns: [5, 10, 20], expo: true,
+                pista: 'Divide numerador y denominador entre la exponencial dominante, ' + expN(b) + '.',
+                solucion: 'Divide entre <b>' + expN(b) + '</b>: ' + frac('1 ' + sg(c) + ' ' + Math.abs(c) + '/' + expN(b), '1 ' + sg(e) + ' ' + Math.abs(e) + '/' + expN(b)) +
+                    '. Como ' + expN(b) + ' → ∞, los términos con ' + expN(b) + ' abajo tienden a 0 y el límite es <b>1</b>.'
+            };
+        }
+        if (tipo === 'B') {
+            const d = randInt(2, 4), b = randInt(d + 1, 7);
+            return {
+                expr: frac(expN(d), expN(b)),
+                f: n => Math.pow(d, n) / Math.pow(b, n),
+                L: fracVal(0, 1), nMax: 12, ns: [5, 10, 20], expo: true,
+                pista: 'Es lo mismo que (' + d + '/' + b + ')ⁿ. ¿La razón es menor o mayor que 1?',
+                solucion: frac(expN(d), expN(b)) + ' = (' + d + '/' + b + ')<sup>n</sup>. Es una potencia de razón ' + d + '/' + b + ' con 0 &lt; ' + d + '/' + b + ' &lt; 1, así que tiende a <b>0</b>.'
+            };
+        }
+        if (tipo === 'C') {
+            const b = randInt(3, 7), d = randInt(2, b - 1);
+            return {
+                expr: frac(expN(b), expN(d)),
+                f: n => Math.pow(b, n) / Math.pow(d, n),
+                L: { tipo: 'pinf' }, nMax: 12, ns: [5, 10, 20], expo: true,
+                pista: 'Es lo mismo que (' + b + '/' + d + ')ⁿ. ¿La razón es menor o mayor que 1?',
+                solucion: frac(expN(b), expN(d)) + ' = (' + b + '/' + d + ')<sup>n</sup>. La razón ' + b + '/' + d + ' es mayor que 1, así que la sucesión crece sin límite: tiende a <b>+∞</b>.'
+            };
+        }
+        if (tipo === 'D') {
+            const b = randInt(3, 6), d = randInt(2, b - 1);
+            return {
+                expr: frac(expN(b) + ' + ' + expN(d), expN(b)),
+                f: n => (Math.pow(b, n) + Math.pow(d, n)) / Math.pow(b, n),
+                L: fracVal(1, 1), nMax: 12, ns: [5, 10, 20], expo: true,
+                pista: 'Separa la fracción en dos o divide entre ' + expN(b) + '. ¿Qué hace (' + d + '/' + b + ')ⁿ?',
+                solucion: 'Divide entre <b>' + expN(b) + '</b>: 1 + (' + d + '/' + b + ')<sup>n</sup>. Como 0 &lt; ' + d + '/' + b + ' &lt; 1, (' + d + '/' + b + ')<sup>n</sup> → 0 y el límite es <b>1</b>.'
+            };
+        }
+        if (tipo === 'E') {
+            const k = randInt(1, 5);
+            return {
+                expr: frac('(−1)<sup>n</sup>', k === 1 ? 'n' : k + 'n'),
+                f: n => Math.pow(-1, n) / (k * n),
+                L: fracVal(0, 1), nMax: 30, ns: [10, 100, 1000],
+                pista: 'Mira el valor absoluto: |aₙ| = 1/' + (k === 1 ? 'n' : k + 'n') + '. Si |aₙ| → 0, ¿qué pasa con aₙ?',
+                solucion: 'El signo alterna, pero |a<sub>n</sub>| = 1/' + (k === 1 ? 'n' : k + 'n') + ' → 0. Si el valor absoluto tiende a 0, la sucesión tiende a <b>0</b> (aunque oscile entre positivos y negativos).'
+            };
+        }
+        const s = randInt(1, 5);
+        return {
+            expr: '(−1)<sup>n</sup> · ' + frac('n', 'n + ' + s),
+            f: n => Math.pow(-1, n) * n / (n + s),
+            L: { tipo: 'ne' }, nMax: 30, ns: [10, 101, 1000], ne: true,
+            pista: 'Estudia cada parte por separado: ¿a qué tiende n/(n + ' + s + ')? ¿y qué hace (−1)ⁿ?',
+            solucion: frac('n', 'n + ' + s) + ' → 1, pero (−1)<sup>n</sup> alterna de signo: los términos pares se acercan a <b>1</b> y los impares a <b>−1</b>. Como se acumulan en dos valores distintos, el límite <b>no existe</b>.'
+        };
+    }
+    // Nivel 5: raíces y conjugado
+    function nivel5() {
+        const tipo = pick(['A', 'B', 'C']);
+        if (tipo === 'A') {
+            const k = randInt(1, 4), q = randInt(1, 9), r = randInt(1, 4), s = randInt(1, 9);
+            const L = fracVal(k, r);
+            return {
+                expr: frac('√(' + poly([k * k, q], ['n²', '']) + ')', poly([r, s], ['n', ''])),
+                f: n => Math.sqrt(k * k * n * n + q) / (r * n + s),
+                L, nMax: 30, ns: [10, 100, 1000],
+                pista: 'Divide numerador y denominador entre n. Dentro de la raíz, n equivale a √(n²).',
+                solucion: 'Divide entre <b>n</b> (dentro de la raíz entra como n²): ' + frac('√(' + poly([k * k, q], ['', '/n²']) + ')', poly([r, s], ['', '/n'])) +
+                    '. Los términos con 1/n tienden a 0 y queda ' + frac('√' + (k * k), r) + ' = ' + frac(k, r) + ' = <b>' + fmtL(L) + '</b>.'
+            };
+        }
+        if (tipo === 'B') {
+            const a = randInt(2, 9);
+            const L = fracVal(a, 2);
+            return {
+                expr: '√(n² + ' + a + 'n) − n',
+                f: n => Math.sqrt(n * n + a * n) - n,
+                L, nMax: 30, ns: [10, 100, 1000],
+                pista: 'Al sustituir da ∞ − ∞. Multiplica y divide por el conjugado √(n² + ' + a + 'n) + n.',
+                solucion: 'Multiplica y divide por el conjugado: el numerador queda (n² + ' + a + 'n) − n² = ' + a + 'n, es decir, ' + aN + ' = ' + frac(a + 'n', '√(n² + ' + a + 'n) + n') +
+                    '. Dividiendo entre n: ' + frac(a, '√(1 + ' + a + '/n) + 1') + ' → ' + frac(a, '1 + 1') + ' = <b>' + fmtL(L) + '</b>.'
+            };
+        }
+        const a = randInt(1, 9);
+        return {
+            expr: '√(n + ' + a + ') − √n',
+            f: n => Math.sqrt(n + a) - Math.sqrt(n),
+            L: fracVal(0, 1), nMax: 30, ns: [10, 100, 1000],
+            pista: 'Al sustituir da ∞ − ∞. Multiplica y divide por el conjugado √(n + ' + a + ') + √n.',
+            solucion: 'Con el conjugado: el numerador queda (n + ' + a + ') − n = ' + a + ', así que ' + aN + ' = ' + frac(a, '√(n + ' + a + ') + √n') +
+                '. El denominador crece sin límite, por lo que el límite es <b>0</b>.'
+        };
+    }
+    const NIVELES = [
+        { id: 1, nombre: '1 · Lineal', gen: nivel1 },
+        { id: 2, nombre: '2 · Cuadrático', gen: nivel2 },
+        { id: 3, nombre: '3 · Grados distintos', gen: nivel3 },
+        { id: 4, nombre: '4 · Potencias y (−1)ⁿ', gen: nivel4 },
+        { id: 5, nombre: '5 · Raíces', gen: nivel5 }
+    ];
+    // ==== FIN GENERADORES ====
+
+    // ==== LÓGICA DE LA PÁGINA ====
+    let nivelActual = 0;      // 0 = mixto
+    let P = null, intentos = 0, pistaUsada = false, resuelto = false;
+    let puntos = 0, racha = 0, mejor = 0, aciertos = 0, total = 0;
+    const CLAVE = 'mateuna_dojo_sucesiones';
+
+    function $(id) { return document.getElementById(id); }
+    function toggleTeoria() { $('teoria-box').classList.toggle('hidden'); }
+    function poner(t) { $('input-resp').value = t; $('input-resp').focus(); }
+
+    function cargarGuardado() {
+        try { const g = JSON.parse(localStorage.getItem(CLAVE) || '{}'); mejor = g.mejor || 0; } catch (e) {}
+    }
+    function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify({ mejor })); } catch (e) {} }
+
+    function pintarNiveles() {
+        const cont = $('niveles');
+        const items = [{ id: 0, nombre: '🎲 Mixto' }].concat(NIVELES);
+        cont.innerHTML = items.map(n =>
+            '<button onclick="elegirNivel(' + n.id + ')" class="text-xs font-bold px-3 py-2 rounded-xl transition border ' +
+            (n.id === nivelActual ? 'bg-indigo-600 text-white border-indigo-600' : 'bg-white text-slate-600 border-slate-200 hover:bg-slate-50') + '">' + n.nombre + '</button>'
+        ).join('');
+    }
+    function elegirNivel(id) { nivelActual = id; pintarNiveles(); nuevoProblema(); }
+
+    function nuevoProblema() {
+        const n = nivelActual === 0 ? pick(NIVELES) : NIVELES.find(x => x.id === nivelActual);
+        P = n.gen(); P.nivelNombre = n.nombre;
+        intentos = 0; pistaUsada = false; resuelto = false;
+        $('badge-nivel').textContent = 'Nivel ' + n.nombre;
+        $('expr-display').innerHTML = '<span class="font-mono">' + aN + ' =</span> ' + P.expr;
+        $('input-resp').value = ''; $('input-resp').disabled = false;
+        $('btn-check').disabled = false;
+        ['pista-box', 'valores-box', 'feedback-box', 'resultado-box'].forEach(i => $(i).classList.add('hidden'));
+        ['btn-pista', 'btn-valores', 'btn-rendir', 'btn-check'].forEach(i => { $(i).classList.remove('opacity-40', 'pointer-events-none'); });
+        $('input-resp').focus();
+    }
+
+    function parseRespuesta(txt) {
+        const t = String(txt).trim().toLowerCase().replace(/\s+/g, '').replace(/−/g, '-').replace(/,/g, '.');
+        if (!t) return null;
+        if (/^(\+?∞|\+?inf|\+?infinito)$/.test(t)) return { tipo: 'pinf' };
+        if (/^(-∞|-inf|-infinito)$/.test(t)) return { tipo: 'minf' };
+        if (/^(noexiste|ne|oscila)$/.test(t)) return { tipo: 'ne' };
+        let m = t.match(/^(-?\d+(?:\.\d+)?)\/(-?\d+(?:\.\d+)?)$/);
+        if (m) { const d = parseFloat(m[2]); if (d === 0) return null; return { tipo: 'val', v: parseFloat(m[1]) / d, decimal: false }; }
+        if (/^-?\d+(\.\d+)?$/.test(t)) return { tipo: 'val', v: parseFloat(t), decimal: t.indexOf('.') > -1 };
+        return null;
+    }
+    function esCorrecta(ans, L) {
+        if (L.tipo === 'num') {
+            if (ans.tipo !== 'val') return false;
+            const exacto = L.p / L.q;
+            return Math.abs(ans.v - exacto) < (ans.decimal ? 0.005 : 1e-9);
+        }
+        return ans.tipo === L.tipo;
+    }
+
+    function setPuntaje() {
+        $('score-val').textContent = puntos;
+        $('streak-val').textContent = '🔥 ' + racha;
+        $('best-val').textContent = 'Mejor: ' + mejor;
+        $('hits-val').textContent = aciertos + '/' + total;
+    }
+    function mostrarFeedback(html, clase) {
+        const b = $('feedback-box');
+        b.className = 'p-4 rounded-xl text-sm font-medium text-left ' + clase;
+        b.innerHTML = html; b.classList.remove('hidden');
+    }
+
+    function comprobar() {
+        if (!P || resuelto) return;
+        const ans = parseRespuesta($('input-resp').value);
+        if (!ans) { mostrarFeedback('Escribe un número (por ejemplo 3/2 o 0.5) o elige +∞, −∞ o No existe.', 'bg-amber-50 border border-amber-200 text-amber-800'); return; }
+        intentos++;
+        if (esCorrecta(ans, P.L)) {
+            const ganados = Math.max(0, (intentos === 1 ? 10 : 5) - (pistaUsada ? 2 : 0));
+            puntos += ganados; total++; aciertos++;
+            if (intentos === 1) { racha++; if (racha > mejor) { mejor = racha; guardar(); } } else { racha = 0; }
+            resolver(true, '✅ <strong>¡Correcto!</strong> +' + ganados + ' puntos.');
+        } else if (intentos >= 2) {
+            total++; racha = 0;
+            resolver(false, '❌ <strong>Incorrecto.</strong> La respuesta es <strong>' + fmtL(P.L) + '</strong>. Revisa la solución y la gráfica.');
+        } else {
+            racha = 0; setPuntaje();
+            mostrarFeedback('❌ <strong>Todavía no.</strong> Te queda un intento: usa la pista o ✨ explora con "Ver valores".', 'bg-rose-50 border border-rose-200 text-rose-800');
+        }
+    }
+    function rendirse() {
+        if (!P || resuelto) return;
+        total++; racha = 0;
+        resolver(false, '👀 La respuesta es <strong>' + fmtL(P.L) + '</strong>. Estudia la solución y vuelve a intentarlo con otro reto.');
+    }
+    function resolver(ok, msg) {
+        resuelto = true;
+        $('input-resp').disabled = true;
+        ['btn-pista', 'btn-valores', 'btn-rendir', 'btn-check'].forEach(i => $(i).classList.add('opacity-40', 'pointer-events-none'));
+        setPuntaje();
+        mostrarFeedback(msg + '<div class="mt-3 text-slate-700 font-normal">' + P.solucion + '</div>',
+            ok ? 'bg-emerald-50 border border-emerald-200 text-emerald-800' : 'bg-rose-50 border border-rose-200 text-rose-800');
+        $('resultado-box').classList.remove('hidden');
+        dibujarGrafica(P);
+    }
+
+    function verPista() {
+        if (!P || resuelto) return;
+        pistaUsada = true;
+        const b = $('pista-box'); b.innerHTML = '💡 ' + P.pista; b.classList.remove('hidden');
+    }
+    function fmtNum(x) {
+        if (!isFinite(x)) return '—';
+        if (Math.abs(x) >= 1e6) return x.toExponential(2);
+        return String(Number(x.toFixed(6)));
+    }
+    function verValores() {
+        if (!P || resuelto) return;
+        const filas = P.ns.map(n => '<tr class="border-b border-slate-100"><td class="p-2 font-mono">n = ' + n + '</td><td class="p-2 text-right font-mono text-indigo-700">' + fmtNum(P.f(n)) + '</td></tr>').join('');
+        const b = $('valores-box');
+        b.innerHTML = '<table class="w-full text-xs text-slate-600 border-collapse bg-sky-50 rounded-xl overflow-hidden"><thead class="bg-sky-100 text-sky-900 uppercase"><tr><th class="p-2 text-left">n</th><th class="p-2 text-right">a<sub>n</sub></th></tr></thead><tbody>' + filas + '</tbody></table>' +
+            '<p class="text-[11px] text-slate-400 mt-1">Los valores te dan una idea, pero el límite se demuestra con el procedimiento.</p>';
+        b.classList.remove('hidden');
+        pistaUsada = true;
+    }
+
+    function dibujarGrafica(p) {
+        const c = $('canvas-grafica'), ctx = c.getContext('2d'), W = c.width, H = c.height;
+        const padL = 46, padR = 14, padT = 16, padB = 28;
+        ctx.clearRect(0, 0, W, H);
+        const xs = [], ys = [];
+        for (let n = 1; n <= p.nMax; n++) { const y = p.f(n); if (isFinite(y)) { xs.push(n); ys.push(y); } }
+        let yMin = Math.min.apply(null, ys), yMax = Math.max.apply(null, ys);
+        const Lval = p.L.tipo === 'num' ? p.L.p / p.L.q : null;
+        if (Lval !== null) { yMin = Math.min(yMin, Lval); yMax = Math.max(yMax, Lval); }
+        if (yMax - yMin < 1e-9) { yMin -= 1; yMax += 1; }
+        const m = (yMax - yMin) * 0.1; yMin -= m; yMax += m;
+        const mx = n => padL + (n - 1) / (p.nMax - 1) * (W - padL - padR);
+        const my = y => H - padB - (y - yMin) / (yMax - yMin) * (H - padT - padB);
+
+        // cuadrícula y ejes
+        ctx.strokeStyle = '#1e293b'; ctx.lineWidth = 1;
+        for (let i = 0; i <= 4; i++) { const y = padT + i * (H - padT - padB) / 4; ctx.beginPath(); ctx.moveTo(padL, y); ctx.lineTo(W - padR, y); ctx.stroke(); }
+        ctx.strokeStyle = '#475569'; ctx.lineWidth = 2;
+        ctx.beginPath(); ctx.moveTo(padL, padT); ctx.lineTo(padL, H - padB); ctx.lineTo(W - padR, H - padB); ctx.stroke();
+        if (yMin < 0 && yMax > 0) { ctx.strokeStyle = '#64748b'; ctx.lineWidth = 1; ctx.beginPath(); ctx.moveTo(padL, my(0)); ctx.lineTo(W - padR, my(0)); ctx.stroke(); }
+
+        // etiquetas
+        ctx.fillStyle = '#94a3b8'; ctx.font = '11px sans-serif'; ctx.textAlign = 'right';
+        ctx.fillText(fmtNum(yMax), padL - 6, padT + 10);
+        ctx.fillText(fmtNum(yMin), padL - 6, H - padB);
+        ctx.textAlign = 'center';
+        ctx.fillText('1', mx(1), H - 10); ctx.fillText(String(Math.round(p.nMax / 2)), mx(Math.round(p.nMax / 2)), H - 10); ctx.fillText(String(p.nMax) + '  (n)', mx(p.nMax) - 10, H - 10);
+
+        // recta del límite
+        if (Lval !== null) {
+            ctx.setLineDash([6, 5]); ctx.strokeStyle = '#fbbf24'; ctx.lineWidth = 2;
+            ctx.beginPath(); ctx.moveTo(padL, my(Lval)); ctx.lineTo(W - padR, my(Lval)); ctx.stroke(); ctx.setLineDash([]);
+            ctx.fillStyle = '#fbbf24'; ctx.textAlign = 'left'; ctx.font = 'bold 12px sans-serif';
+            ctx.fillText('L = ' + fmtL(p.L), padL + 8, my(Lval) - 6);
+        }
+        // puntos de la sucesión
+        ctx.fillStyle = '#38bdf8';
+        xs.forEach((n, i) => { ctx.beginPath(); ctx.arc(mx(n), my(ys[i]), 3.5, 0, Math.PI * 2); ctx.fill(); });
+
+        const notas = {
+            num: 'Los puntos (a₁, a₂, a₃…) se acercan cada vez más a la recta punteada: ese valor es el límite.',
+            pinf: 'Los términos crecen sin parar: no se acercan a ningún número, la sucesión tiende a +∞.',
+            minf: 'Los términos decrecen sin parar: no se acercan a ningún número, la sucesión tiende a −∞.',
+            ne: 'Los términos saltan entre dos zonas distintas: no se acercan a un único valor, así que no hay límite.'
+        };
+        $('grafica-nota').textContent = notas[p.L.tipo];
+    }
+
+    window.addEventListener('DOMContentLoaded', () => {
+        cargarGuardado(); pintarNiveles(); setPuntaje(); nuevoProblema();
+        $('input-resp').addEventListener('keydown', e => { if (e.key === 'Enter') comprobar(); });
+    });
+    </script>
+</body>
+</html>
