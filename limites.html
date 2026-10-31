@@ -29,9 +29,9 @@
         <section class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 space-y-3">
             <h2 class="text-lg font-bold text-indigo-950">Escribe cualquier función f(x):</h2>
             <div class="flex flex-col sm:flex-row gap-3">
-                <input id="input-funcion" type="text" value="(x^2 - 4) / (x - 2)" 
+                <input id="input-funcion" type="text" value="(x² - 4) / (x - 2)" 
                        class="flex-grow p-3 border border-slate-300 rounded-xl font-mono text-sm focus:outline-none focus:ring-2 focus:ring-indigo-600"
-                       placeholder="Ej: (x^2-4)/(x-2), (x^3-1)/(x-1)">
+                       placeholder="Ej: (x²-4)/(x-2), (x³-1)/(x-1)">
                 <button onclick="procesarFuncion()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-semibold px-6 py-3 rounded-xl transition shadow-sm cursor-pointer">
                     Graficar y Evaluar
                 </button>
@@ -46,7 +46,7 @@
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between space-y-4">
                 <div>
                     <label for="slider-x" class="block text-sm font-bold text-slate-700 mb-1">
-                        Punto de Tendencia ($x_0$): <span id="val-x" class="text-indigo-600 font-mono text-base">2.00</span>
+                        Punto de Tendencia (x₀): <span id="val-x" class="text-indigo-600 font-mono text-base">2.00</span>
                     </label>
                     <input id="slider-x" type="range" min="-5" max="5" step="0.01" value="2" 
                            oninput="actualizarSimulacion()"
@@ -67,13 +67,13 @@
             <!-- TABLA DE APROXIMACIÓN DINÁMICA -->
             <div class="bg-white p-5 rounded-2xl shadow-sm border border-slate-200 flex flex-col justify-between">
                 <div>
-                    <h3 class="text-sm font-bold text-slate-700 mb-3">Comportamiento del Límite al rededor de $x_0$</h3>
+                    <h3 class="text-sm font-bold text-slate-700 mb-3">Comportamiento del Límite al rededor de x₀</h3>
                     <div class="overflow-x-auto">
                         <table class="w-full text-left text-xs text-slate-600 border-collapse">
                             <thead class="bg-slate-100 text-slate-700 uppercase">
                                 <tr>
-                                    <th class="p-2 border-b">Por Izquierda ($x \to x_0^-$)</th>
-                                    <th class="p-2 border-b text-right">$f(x)$</th>
+                                    <th class="p-2 border-b">Por Izquierda (x --> x₀)</th>
+                                    <th class="p-2 border-b text-right">f(x)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-izquierda"></tbody>
@@ -84,8 +84,8 @@
                         <table class="w-full text-left text-xs text-slate-600 border-collapse">
                             <thead class="bg-slate-100 text-slate-700 uppercase">
                                 <tr>
-                                    <th class="p-2 border-b">Por Derecha ($x \to x_0^+$)</th>
-                                    <th class="p-2 border-b text-right">$f(x)$</th>
+                                    <th class="p-2 border-b">Por Derecha (x --> x₀))</th>
+                                    <th class="p-2 border-b text-right">f(x)</th>
                                 </tr>
                             </thead>
                             <tbody id="tabla-derecha"></tbody>
