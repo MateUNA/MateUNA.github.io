@@ -17,9 +17,10 @@ const LOCAL_ASSETS = [
   './practica.html',
   './factorizacion.html',
   './limites.html',
+  './sucesiones.html',
   './mateuna.js',
   './materias.js',
-  './entrenar.js',
+  './entrenar.js',  
   './libs/tailwind.js',   // copia local de Tailwind (ver instrucciones); si no existe, se omite
   './mateuna.css',
   './manifest.json',
